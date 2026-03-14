@@ -23,3 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 .env
+node_modules
+dist
+dist-electron
+release
+*.AppImage
+*.exe
+*.snap
+linux-unpacked
+win-unpacked
