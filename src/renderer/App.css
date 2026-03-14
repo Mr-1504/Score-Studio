@@ -1,0 +1,260 @@
+/* src/renderer/App.css */
+
+:root {
+  /* Bảng màu Studio Professional */
+  --bg-app: #f3f4f6;          /* Nền tổng thể (Xám rất nhạt) */
+  --bg-panel: #ffffff;        /* Nền Sidebar/Toolbar (Trắng) */
+  --border-light: #e5e7eb;    /* Viền mỏng */
+  --text-primary: #111827;    /* Chữ chính (Đen than) */
+  --text-secondary: #6b7280;  /* Chữ phụ (Xám) */
+  
+  --brand-color: #000000;     /* Màu thương hiệu */
+  --action-primary: #111827;  /* Nút bấm chính */
+  --action-hover: #374151;    /* Nút bấm khi hover */
+  
+  --accent-blue: #2563eb;     /* Nhấn nhá chức năng đang chọn */
+  --state-success: #059669;   /* Xanh lá cho trạng thái hoàn thành */
+  --state-error: #dc2626;     /* Đỏ cho lỗi */
+  --state-warning: #d97706;   /* Cam cho đang xử lý */
+  
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+}
+
+.app-layout {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+  width: 300px;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+}
+
+.brand {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.brand h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+  letter-spacing: -0.5px;
+  color: var(--brand-color);
+}
+
+.brand p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.controls-section {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  overflow-y: auto;
+}
+
+/* ================= FORM & INPUTS ================= */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.engine-select {
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+  cursor: pointer;
+}
+
+.engine-select:focus {
+  border-color: var(--accent-blue);
+  background-color: var(--bg-panel);
+}
+
+/* ================= BUTTONS ================= */
+.btn {
+  padding: 0.75rem 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: var(--action-primary);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--action-hover);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border-color: var(--border-light);
+  color: var(--text-primary);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background-color: var(--bg-app);
+  border-color: #d1d5db;
+}
+
+.file-list {
+  background: var(--bg-app);
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+}
+
+/* ================= STATUS BOARD ================= */
+.status-box {
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.4;
+  border-left: 3px solid transparent;
+  background-color: var(--bg-app);
+  color: var(--text-secondary);
+}
+
+.status-idle { border-left-color: var(--border-light); }
+.status-processing { 
+  border-left-color: var(--state-warning); 
+  background-color: #fffbeb;
+  color: #92400e;
+}
+.status-ready { 
+  border-left-color: var(--state-success); 
+  background-color: #f0fdf4;
+  color: #166534;
+}
+.status-error { 
+  border-left-color: var(--state-error); 
+  background-color: #fef2f2;
+  color: #991b1b;
+}
+
+.progress-bar {
+  height: 4px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 2px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: currentColor; /* Tự ăn theo màu chữ của status-box */
+  transition: width 0.3s ease;
+}
+
+/* ================= WORKSPACE (BÊN PHẢI) ================= */
+.workspace {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-panel);
+}
+
+.top-toolbar {
+  min-height: 60px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-light);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sheet-area {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  background: var(--bg-panel);
+}
+
+.keyboard-area {
+  height: 160px;
+  background: #f8fafc;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 0; /* Cho phím dính sát đáy */
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  gap: 1rem;
+}
+
+.empty-state svg {
+  opacity: 0.2;
+}
+
+/* ================= BẢNG ĐIỂM (SCORE BOARD) ================= */
+.score-board {
+  display: flex;
+  gap: 1.5rem;
+  font-family: 'Courier New', Courier, monospace; /* Font monospace nhìn pro hơn */
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.score-text { color: var(--text-primary); }
+.combo-text { color: var(--state-warning); }

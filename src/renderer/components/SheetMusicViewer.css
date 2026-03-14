@@ -1,0 +1,107 @@
+.sheet-music-viewer {
+  display: flex;
+  flex-direction: column;
+  height: 60%;
+  border-bottom: 2px solid #dee2e6;
+  background: white;
+}
+
+.viewer-controls {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.zoom-btn {
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.zoom-btn:hover {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+  transform: translateY(-1px);
+}
+
+.zoom-level {
+  min-width: 60px;
+  text-align: center;
+  font-weight: 600;
+  color: #495057;
+}
+
+.viewer-content {
+  flex: 1;
+  overflow: auto;
+  padding: 2rem;
+  position: relative;
+}
+
+.viewer-loading,
+.viewer-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #6c757d;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.viewer-error p {
+  color: #dc3545;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.sheet-music-container {
+  min-height: 400px;
+  background: white;
+}
+
+/* Customize OpenSheetMusicDisplay SVG styling */
+.sheet-music-container svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Highlight styles for notes during playback */
+.sheet-music-container .cursor {
+  fill: #667eea !important;
+  fill-opacity: 0.3 !important;
+}
+
+.sheet-music-container .note-highlight {
+  fill: #ffc107 !important;
+  fill-opacity: 0.5 !important;
+}
