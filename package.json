@@ -1,9 +1,11 @@
 {
-  "name": "muse-parse",
+  "name": "score-studio",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "main": "dist-electron/main/index.js",
+  "description": "Music sheet parser studio",
+  "author": "truongvanminh-Mr1504",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -11,6 +13,20 @@
     "preview": "vite preview",
     "electron:dev": "vite --mode development",
     "electron:build": "vite build && electron-builder"
+  },
+  "build": {
+    "appId": "com.scorestudio.app",
+    "productName": "Score Studio",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist",
+      "dist-electron"
+    ],
+    "win": {
+      "target": "portable"
+    }
   },
   "dependencies": {
     "@types/adm-zip": "^0.5.7",
@@ -30,6 +46,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
     "electron": "^40.4.1",
+    "electron-builder": "^26.8.1",
     "electron-vite": "^5.0.0",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
