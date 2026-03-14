@@ -6,10 +6,11 @@ import FormData from "form-data";
 import AdmZip from "adm-zip";
 
 // Load environment variables
-const CONVERT_API_URL = process.env.VITE_CONVERT_API_URL || "http://localhost:8080/api/v1/musicxml/convert";
-const DOWNLOAD_API_URL = process.env.VITE_DOWNLOAD_API_URL || "http://localhost:8080/api/v1/musicxml/download";
-const STATUS_API_URL = process.env.VITE_STATUS_API_URL || "http://localhost:8080/api/v1/musicxml/status";
-
+const getApiUrls = () => ({
+    convert: process.env.VITE_CONVERT_API_URL || "http://localhost:8080/api/v1/musicxml/convert",
+    download: process.env.VITE_DOWNLOAD_API_URL || "http://localhost:8080/api/v1/musicxml/download",
+    status: process.env.VITE_STATUS_API_URL || "http://localhost:8080/api/v1/musicxml/status"
+});
 // Job status matching backend
 const JobStatus = {
     PENDING: "PENDING",
@@ -59,6 +60,7 @@ ipcMain.handle("select-image-files", async () => {
 ipcMain.handle("upload-and-convert", async (event, filePath: string, engine: string) => {
     try {
         console.log(`Processing with engine: ${engine}`);
+        const apis = getApiUrls();
         
         if (engine === 'CUSTOM_MODEL_KERN') {
             // TODO: Thay thế bằng API gọi Model AI Custom của bạn (trả về file **kern)
@@ -79,9 +81,9 @@ ipcMain.handle("upload-and-convert", async (event, filePath: string, engine: str
         const formData = new FormData();
         formData.append("file", fs.createReadStream(filePath));
 
-        console.log('Uploading to Audiveris API:', CONVERT_API_URL);
+        console.log('Uploading to Audiveris API:', apis.convert);
         
-        const uploadResponse = await axios.post(CONVERT_API_URL, formData, {
+        const uploadResponse = await axios.post(apis.convert, formData, {
             headers: formData.getHeaders(),
             maxContentLength: Infinity,
             maxBodyLength: Infinity,
@@ -112,7 +114,7 @@ ipcMain.handle("upload-and-convert", async (event, filePath: string, engine: str
                 attempts++;
 
                 try {
-                    const statusResponse = await axios.get(`${STATUS_API_URL}/${jobId}`, { timeout: 10000 });
+                    const statusResponse = await axios.get(`${apis.status}/${jobId}`, { timeout: 10000 });
                     const updatedJob: ConversionJob = statusResponse.data;
 
                     if (updatedJob.status === JobStatus.COMPLETED) {
@@ -140,9 +142,10 @@ ipcMain.handle("upload-and-convert", async (event, filePath: string, engine: str
 // Handler: Tải file MXL từ API và extract XML
 ipcMain.handle("download-musicxml", async (_event, jobId: string) => {
     try {
-        console.log('Downloading from:', `${DOWNLOAD_API_URL}/${jobId}`);
+        const apis = getApiUrls();
+        console.log('Downloading from:', `${apis.download}/${jobId}`);
         
-        const response = await axios.get(`${DOWNLOAD_API_URL}/${jobId}`, {
+        const response = await axios.get(`${apis.download}/${jobId}`, {
             responseType: "arraybuffer",
             timeout: 300000 // 5 minutes timeout
         });

@@ -8,8 +8,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load environment variables
-dotenv.config();
-
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+console.log('Environment variables loaded:', {
+    CONVERT_API_URL: process.env.VITE_CONVERT_API_URL,
+    DOWNLOAD_API_URL: process.env.VITE_DOWNLOAD_API_URL,
+    STATUS_API_URL: process.env.VITE_STATUS_API_URL
+});
 // Import services (this registers IPC handlers)
 import './services/converter.js';
 
