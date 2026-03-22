@@ -1,130 +1,51 @@
-.loop-selector {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 100%;
-}
+.loop-selector { display: flex; flex-direction: column; gap: 4px; width: 100%; }
 
-/* ── Bar ────────────────────────────────────── */
 .ls-bar {
-  position: relative;
-  height: 20px;
-  background: #38383a;
-  border-radius: 3px;
-  cursor: pointer;
-  overflow: visible;
+  position: relative; height: 20px;
+  background: rgba(0,0,0,0.10); border-radius: 3px;
+  cursor: pointer; overflow: visible;
 }
-
 .ls-progress {
-  position: absolute;
-  left: 0; top: 0;
-  height: 100%;
-  background: #2c3a4a;
-  border-radius: 3px;
-  pointer-events: none;
-  transition: width 0.1s linear;
+  position: absolute; left: 0; top: 0; height: 100%;
+  background: rgba(47,110,165,0.20); border-radius: 3px;
+  pointer-events: none; transition: width 0.1s linear;
 }
-
-/* Loop region highlight */
 .ls-region {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  background: rgba(74, 158, 255, 0.15);
-  border-top: 1px solid rgba(74, 158, 255, 0.3);
-  border-bottom: 1px solid rgba(74, 158, 255, 0.3);
-  cursor: grab;
-  z-index: 2;
+  position: absolute; top: 0; height: 100%;
+  background: rgba(47,110,165,0.15);
+  border-top: 1px solid rgba(47,110,165,0.35);
+  border-bottom: 1px solid rgba(47,110,165,0.35);
+  cursor: grab; z-index: 2;
 }
 .ls-region:active { cursor: grabbing; }
-.ls-region.active {
-  background: rgba(74, 158, 255, 0.25);
-  border-color: rgba(74, 158, 255, 0.6);
-}
-
-/* Drag handles */
+.ls-region.active { background: rgba(47,110,165,0.25); border-color: rgba(47,110,165,0.6); }
 .ls-handle {
-  position: absolute;
-  top: -2px;
-  width: 4px;
-  height: calc(100% + 4px);
-  background: #4a9eff;
-  border-radius: 2px;
-  cursor: ew-resize;
-  z-index: 3;
-  transform: translateX(-2px);
+  position: absolute; top: -2px; width: 4px; height: calc(100% + 4px);
+  background: #2f6ea5; border-radius: 2px; cursor: ew-resize; z-index: 3; transform: translateX(-2px);
 }
-.ls-handle:hover { background: #7bbfff; }
-
-/* Playhead */
+.ls-handle:hover { background: #3d85c0; }
 .ls-playhead {
-  position: absolute;
-  top: -3px;
-  width: 2px;
-  height: calc(100% + 6px);
-  background: #e8e8ea;
-  border-radius: 1px;
-  pointer-events: none;
-  z-index: 4;
-  transform: translateX(-1px);
-  transition: left 0.05s linear;
+  position: absolute; top: -3px; width: 2px; height: calc(100% + 6px);
+  background: #1a1814; border-radius: 1px; pointer-events: none; z-index: 4;
+  transform: translateX(-1px); transition: left 0.05s linear;
 }
 
-/* ── Controls row ───────────────────────────── */
-.ls-controls {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 16px;
-}
-
+.ls-controls { display: flex; align-items: center; gap: 6px; min-height: 16px; }
 .ls-loop-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border: 1px solid #38383a;
-  border-radius: 5px;
-  background: transparent;
-  color: #636366;
-  cursor: pointer;
-  transition: all 0.12s;
-  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 5px; background: transparent; color: #a8a39d;
+  cursor: pointer; transition: all 0.12s; flex-shrink: 0;
 }
-.ls-loop-btn:hover:not(:disabled) { color: #c7c7cc; border-color: #48484a; }
-.ls-loop-btn.active {
-  color: #4a9eff;
-  border-color: #2563a8;
-  background: #1a2f4a;
-}
+.ls-loop-btn:hover:not(:disabled) { color: #3d3a35; border-color: rgba(0,0,0,0.22); background: rgba(0,0,0,0.05); }
+.ls-loop-btn.active { color: #2f6ea5; border-color: #b8d0e8; background: #e8f0f8; }
 .ls-loop-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-.ls-region-label {
-  font-size: 10px;
-  color: #4a9eff;
-  font-variant-numeric: tabular-nums;
-}
-
+.ls-region-label { font-size: 10px; color: #2f6ea5; font-variant-numeric: tabular-nums; font-family: 'DM Mono', monospace; }
 .ls-clear-btn {
-  font-size: 13px;
-  line-height: 1;
-  width: 18px;
-  height: 18px;
-  border: none;
-  background: transparent;
-  color: #636366;
-  cursor: pointer;
-  border-radius: 3px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
+  font-size: 13px; line-height: 1; width: 18px; height: 18px;
+  border: none; background: transparent; color: #a8a39d; cursor: pointer;
+  border-radius: 3px; display: flex; align-items: center; justify-content: center; padding: 0;
 }
-.ls-clear-btn:hover { color: #ff453a; background: #3a1210; }
-
-.ls-hint {
-  font-size: 10px;
-  color: #48484a;
-  font-style: italic;
-}
+.ls-clear-btn:hover { color: #b83030; background: #fdeaea; }
+.ls-hint { font-size: 10px; color: #c0bbb4; font-style: italic; }

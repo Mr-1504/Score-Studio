@@ -1,70 +1,48 @@
+/* ResultModal.css — Studio Light */
 .rm-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+  position: fixed; inset: 0;
+  background: rgba(26,24,20,0.45);
+  display: flex; align-items: center; justify-content: center; z-index: 1000;
+  backdrop-filter: blur(2px);
 }
-
 .rm-modal {
-  background: #242426;
-  border: 1px solid #38383a;
-  border-radius: 14px;
-  padding: 28px 24px;
-  width: 320px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
+  background: #faf8f4; border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 16px; padding: 28px 24px; width: 320px;
+  display: flex; flex-direction: column; align-items: center; gap: 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08);
+  font-family: 'DM Sans', sans-serif;
 }
-
-.rm-grade { font-size: 64px; font-weight: 800; line-height: 1; letter-spacing: -2px; }
-.rm-title { font-size: 11px; font-weight: 500; color: #636366; text-transform: uppercase; letter-spacing: 0.1em; margin-top: -10px; }
-
+.rm-grade { font-size: 64px; font-weight: 700; line-height: 1; letter-spacing: -2px; }
+.rm-title { font-size: 11px; font-weight: 500; color: #a8a39d; text-transform: uppercase; letter-spacing: 0.1em; margin-top: -10px; }
 .rm-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
-
 .rm-stat {
-  background: #2c2c2e;
-  border: 1px solid #38383a;
-  border-radius: 8px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
+  background: #ffffff; border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 9px; padding: 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
-.rm-stat-val   { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
-.rm-stat-label { font-size: 10px; color: #636366; text-transform: uppercase; letter-spacing: 0.06em; }
+.rm-stat-val   { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1; }
+.rm-stat-label { font-size: 10px; color: #a8a39d; text-transform: uppercase; letter-spacing: 0.06em; }
 
-.rm-breakdown { width: 100%; display: flex; flex-direction: column; gap: 7px; }
-.rm-bar {
-  width: 100%; height: 7px;
-  background: #38383a;
-  border-radius: 4px;
-  overflow: hidden;
-  display: flex;
-}
-.rm-bar-correct { background: #34c759; transition: width 0.5s ease; }
-.rm-bar-late    { background: #ff9f0a; transition: width 0.5s ease 0.1s; }
-.rm-bar-wrong   { background: #ff453a; transition: width 0.5s ease 0.2s; }
+.rm-breakdown  { width: 100%; display: flex; flex-direction: column; gap: 7px; }
+.rm-bar        { width: 100%; height: 7px; background: rgba(0,0,0,0.08); border-radius: 4px; overflow: hidden; display: flex; }
+.rm-bar-correct { background: #2a7d4f; transition: width 0.5s ease; }
+.rm-bar-late    { background: #a0621a; transition: width 0.5s ease 0.1s; }
+.rm-bar-wrong   { background: #b83030; transition: width 0.5s ease 0.2s; }
 
 .rm-bar-legend { display: flex; justify-content: space-between; font-size: 11px; }
-.rm-legend-correct { color: #34c759; }
-.rm-legend-late    { color: #ff9f0a; }
-.rm-legend-wrong   { color: #ff453a; }
+.rm-legend-correct { color: #2a7d4f; }
+.rm-legend-late    { color: #a0621a; }
+.rm-legend-wrong   { color: #b83030; }
 
 .rm-actions { display: flex; gap: 8px; width: 100%; }
 .rm-btn {
-  flex: 1; padding: 9px;
-  border: 1px solid transparent;
-  border-radius: 7px;
-  font-size: 12px; font-weight: 600;
-  cursor: pointer;
-  transition: all 0.12s;
+  flex: 1; padding: 9px; border: 1px solid transparent;
+  border-radius: 8px; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all 0.12s;
+  font-family: 'DM Sans', sans-serif;
 }
-.rm-btn-again { background: #1a2f4a; color: #4a9eff; border-color: #2563a8; }
-.rm-btn-again:hover { background: #1f3a5f; color: #7bbfff; }
-.rm-btn-close { background: #2c2c2e; color: #8e8e93; border-color: #38383a; }
-.rm-btn-close:hover { color: #c7c7cc; background: #333335; }
+.rm-btn-again { background: #e8f0f8; color: #2f6ea5; border-color: #b8d0e8; }
+.rm-btn-again:hover { background: #d8e8f4; }
+.rm-btn-close { background: rgba(0,0,0,0.05); color: #7a7570; border-color: rgba(0,0,0,0.10); }
+.rm-btn-close:hover { background: rgba(0,0,0,0.09); color: #1a1814; }

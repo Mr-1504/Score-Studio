@@ -1,138 +1,78 @@
+/* PianoKeyboard.css — Studio Light */
+
 .piano-keyboard-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
   padding: 10px 0 8px;
-  background: #161618;
+  background: #f5f2ee;
   overflow-x: auto;
   width: 100%;
 }
 
-.piano-keyboard {
-  position: relative;
-  flex-shrink: 0;
-}
+.piano-keyboard { position: relative; flex-shrink: 0; }
 
 /* White keys */
 .pk-key.pk-white {
-  position: absolute;
-  top: 0;
-  width: 34px;
-  height: 120px;
-  background: #e8e8ea;
-  border: 1px solid #b0b0b5;
+  position: absolute; top: 0;
+  width: 34px; height: 120px;
+  background: #fafaf8;
+  border: 1px solid #d0cbc4;
   border-top: none;
-  border-radius: 0 0 4px 4px;
+  border-radius: 0 0 5px 5px;
   cursor: pointer;
   transition: background 0.05s;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  display: flex; align-items: flex-end; justify-content: center;
   padding-bottom: 5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08), inset 0 -1px 0 rgba(0,0,0,0.04);
 }
-.pk-key.pk-white:hover { background: #d8d8dc; }
+.pk-key.pk-white:hover { background: #f0ede8; }
 
 /* Black keys */
 .pk-key.pk-black {
-  position: absolute;
-  top: 0;
-  width: 22px;
-  height: 76px;
-  background: #2c2c2e;
-  border: 1px solid #1c1c1e;
+  position: absolute; top: 0;
+  width: 22px; height: 76px;
+  background: #2a2520;
+  border: 1px solid #1a1512;
   border-top: none;
-  border-radius: 0 0 3px 3px;
-  cursor: pointer;
-  z-index: 2;
+  border-radius: 0 0 4px 4px;
+  cursor: pointer; z-index: 2;
   transition: background 0.05s;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.3), inset 0 -1px 0 rgba(255,255,255,0.05);
 }
-.pk-key.pk-black:hover { background: #3a3a3c; }
+.pk-key.pk-black:hover { background: #3a342e; }
 
-/* ── State colors ───────────────────────── */
+/* Active — xanh lam */
+.pk-key.pk-white.pk-active { background: #c8e0f4; border-color: #2f6ea5; box-shadow: inset 0 -3px 6px rgba(47,110,165,0.2); }
+.pk-key.pk-black.pk-active { background: #2f6ea5; border-color: #1a4878; }
 
-/* Playback active — xanh lam */
-.pk-key.pk-white.pk-active {
-  background: #a8d4ff;
-  border-color: #4a9eff;
-  box-shadow: inset 0 -3px 6px rgba(74,158,255,0.3);
-}
-.pk-key.pk-black.pk-active {
-  background: #2563a8;
-  border-color: #1a3f6b;
-  box-shadow: inset 0 -2px 4px rgba(0,0,0,0.4);
-}
-
-/* Expected — xanh nhạt mờ */
-.pk-key.pk-white.pk-expected {
-  background: #d0e8ff;
-  border-color: #90c4ff;
-}
-.pk-key.pk-black.pk-expected {
-  background: #1a3050;
-  border-color: #2563a8;
-}
+/* Expected */
+.pk-key.pk-white.pk-expected { background: #dde8f0; border-color: #90b8d8; }
+.pk-key.pk-black.pk-expected { background: #1e3e5a; border-color: #2f6ea5; }
 
 /* Correct — xanh lá */
-.pk-key.pk-white.pk-correct {
-  background: #b8f0c8;
-  border-color: #34c759;
-}
-.pk-key.pk-black.pk-correct {
-  background: #0d3820;
-  border-color: #248a3d;
-}
+.pk-key.pk-white.pk-correct { background: #c8ecd8; border-color: #2a7d4f; }
+.pk-key.pk-black.pk-correct { background: #1a4a30; border-color: #2a7d4f; }
 
 /* Wrong — đỏ */
-.pk-key.pk-white.pk-wrong {
-  background: #ffc0bc;
-  border-color: #ff453a;
-}
-.pk-key.pk-black.pk-wrong {
-  background: #3a1210;
-  border-color: #bf2418;
-}
+.pk-key.pk-white.pk-wrong { background: #f8d8d8; border-color: #b83030; }
+.pk-key.pk-black.pk-wrong { background: #4a1818; border-color: #b83030; }
 
-/* Late — vàng cam */
-.pk-key.pk-white.pk-late {
-  background: #ffe0a0;
-  border-color: #ff9f0a;
-}
-.pk-key.pk-black.pk-late {
-  background: #3a2800;
-  border-color: #b36b00;
-}
+/* Late — cam */
+.pk-key.pk-white.pk-late { background: #fdebd0; border-color: #c07820; }
+.pk-key.pk-black.pk-late { background: #4a2c08; border-color: #a06018; }
 
-/* Label */
-.pk-label {
-  font-size: 9px;
-  color: #636366;
-  pointer-events: none;
-  font-variant-numeric: tabular-nums;
-}
-.pk-key.pk-active  .pk-label,
-.pk-key.pk-correct .pk-label { color: #1c5c8a; }
+/* Labels */
+.pk-label { font-size: 9px; color: #a8a39d; pointer-events: none; font-family: 'DM Mono', monospace; }
+.pk-key.pk-active .pk-label  { color: #1a4878; }
+.pk-key.pk-correct .pk-label { color: #1a4a30; }
 
 /* Bottom row */
 .pk-bottom-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 900px;
-  padding: 0 8px;
-  min-height: 18px;
-  gap: 12px;
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; max-width: 900px; padding: 0 8px;
+  min-height: 18px; gap: 12px;
 }
-
-.pk-hint {
-  font-size: 10px;
-  color: #48484a;
-  letter-spacing: 0.02em;
-}
-
-.pk-focus-hint {
-  font-size: 10px;
-  color: #636366;
-  font-variant-numeric: tabular-nums;
-}
+.pk-hint       { font-size: 10px; color: #c0bbb4; letter-spacing: 0.02em; }
+.pk-focus-hint { font-size: 10px; color: #a8a39d; font-variant-numeric: tabular-nums; font-family: 'DM Mono', monospace; }

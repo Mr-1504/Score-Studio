@@ -1,23 +1,16 @@
+/* ModeToggle.css — Studio Light */
 .mode-toggle {
-  display: flex;
-  gap: 2px;
-  background: #2c2c2e;
-  border: 1px solid #38383a;
-  border-radius: 7px;
-  padding: 3px;
+  display: flex; gap: 2px;
+  background: rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 8px; padding: 3px;
 }
-
 .mt-btn {
-  padding: 4px 14px;
-  border: none;
-  border-radius: 5px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  background: transparent;
-  color: #636366;
-  transition: all 0.12s;
-  white-space: nowrap;
+  padding: 4px 14px; border: none; border-radius: 6px;
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  background: transparent; color: #7a7570;
+  transition: all 0.12s; white-space: nowrap;
+  font-family: 'DM Sans', sans-serif;
 }
-.mt-btn:hover  { color: #c7c7cc; background: #38383a; }
-.mt-btn.active { background: #1a2f4a; color: #4a9eff; }
+.mt-btn:hover  { color: #1a1814; background: rgba(0,0,0,0.05); }
+.mt-btn.active { background: #ffffff; color: #2f6ea5; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
