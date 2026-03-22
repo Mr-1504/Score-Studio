@@ -1,0 +1,184 @@
+/* src/renderer/components/ScorePanel.css */
+
+.score-panel {
+  width: 160px;
+  flex-shrink: 0;
+  background: #0d0d0f;
+  border-left: 1px solid #1e1e24;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 12px;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+/* ── Header ──────────────────────────────────────── */
+.sp-header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.sp-mode-badge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a78bfa;
+  background: #1e1b4b;
+  border: 1px solid #4c1d95;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+/* ── Accuracy ring ───────────────────────────────── */
+.sp-accuracy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.sp-acc-label {
+  font-size: 10px;
+  color: #52525b;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── Score ───────────────────────────────────────── */
+.sp-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.sp-score-val {
+  font-size: 22px;
+  font-weight: 700;
+  color: #e4e4e7;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.sp-score-label {
+  font-size: 10px;
+  color: #52525b;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── Combo ───────────────────────────────────────── */
+.sp-combo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transition: all 0.2s;
+}
+
+.sp-combo.hot .sp-combo-val {
+  color: #f59e0b;
+  text-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+}
+
+.sp-combo-val {
+  font-size: 20px;
+  font-weight: 700;
+  color: #6366f1;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.sp-combo-label {
+  font-size: 10px;
+  color: #52525b;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── Breakdown ───────────────────────────────────── */
+.sp-breakdown {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sp-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: #18181b;
+}
+
+.sp-stat-val {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.sp-stat-label {
+  font-size: 10px;
+  color: #52525b;
+  text-transform: uppercase;
+}
+
+.sp-correct .sp-stat-val { color: #4ade80; }
+.sp-late    .sp-stat-val { color: #fbbf24; }
+.sp-wrong   .sp-stat-val { color: #f87171; }
+
+/* ── Max combo ───────────────────────────────────── */
+.sp-max-combo {
+  font-size: 11px;
+  color: #52525b;
+  text-align: center;
+}
+
+.sp-max-combo strong {
+  color: #a1a1aa;
+}
+
+/* ── Controls ────────────────────────────────────── */
+.sp-controls {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.sp-btn {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.sp-btn-start {
+  background: #4f46e5;
+  color: white;
+}
+.sp-btn-start:hover { background: #4338ca; }
+
+.sp-btn-stop {
+  background: #7f1d1d;
+  color: #fca5a5;
+}
+.sp-btn-stop:hover { background: #991b1b; }
+
+.sp-btn-reset {
+  background: #18181b;
+  color: #71717a;
+  border: 1px solid #27272a;
+}
+.sp-btn-reset:hover { color: #a1a1aa; background: #27272a; }

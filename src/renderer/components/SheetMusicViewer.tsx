@@ -1,204 +1,234 @@
 import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import { OpenSheetMusicDisplay } from 'opensheetmusicdisplay';
+import { useCurrentNoteIndex } from '../store/usePlaybackStore';
 import './SheetMusicViewer.css';
 
 interface SheetMusicViewerProps {
   musicXML: string;
-  currentNoteIndex?: number;
 }
 
-const SheetMusicViewer = forwardRef(({ musicXML, currentNoteIndex = -1 }: SheetMusicViewerProps, ref) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const osmdRef = useRef<OpenSheetMusicDisplay | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(1.0);
-  const highlightedElementsRef = useRef<SVGElement[]>([]);
-  const graphicalNotesRef = useRef<any[]>([]);
+export interface SheetMusicViewerHandle {
+  scrollToCurrentNote: () => void;
+}
 
-  useEffect(() => {
-    if (!containerRef.current || !musicXML) return;
+const SheetMusicViewer = forwardRef<SheetMusicViewerHandle, SheetMusicViewerProps>(
+  ({ musicXML }, ref) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const osmdRef      = useRef<OpenSheetMusicDisplay | null>(null);
+    const [loading, setLoading]   = useState(true);
+    const [error,   setError]     = useState<string | null>(null);
+    const [zoom,    setZoom]      = useState(1.0);
+    const zoomRef = useRef(zoom);
 
-    const loadMusicXML = async () => {
-      try {
+    const graphicalNotesRef  = useRef<any[]>([]);
+    const highlightedRef     = useRef<{ el: SVGElement; orig: string }[]>([]);
+    const prevIndexRef       = useRef<number>(-1);
+
+    const currentNoteIndex = useCurrentNoteIndex();
+
+    // ── Load OSMD — chờ container có width thực ────────────────────────────
+    useEffect(() => {
+      if (!musicXML) return;
+
+      let cancelled  = false;
+      let observer: ResizeObserver | null = null;
+
+      const doLoad = async (container: HTMLDivElement) => {
+        if (cancelled) return;
+
+        // Clear trước
+        container.innerHTML = '';
+        osmdRef.current     = null;
+        graphicalNotesRef.current = [];
+        prevIndexRef.current      = -1;
+        highlightedRef.current    = [];
+
         setLoading(true);
         setError(null);
 
-        // Clear previous content
-        if (containerRef.current) {
-          containerRef.current.innerHTML = '';
-        }
+        try {
+          const osmd = new OpenSheetMusicDisplay(container, {
+            autoResize:        true,
+            backend:           'svg',
+            drawTitle:         true,
+            drawComposer:      true,
+            drawingParameters: 'default',  // 'compact' đôi khi gây width=0
+          });
 
-        if (!containerRef.current) return;
+          await osmd.load(musicXML);
+          if (cancelled) return;
 
-        // Initialize OpenSheetMusicDisplay
-        const osmd = new OpenSheetMusicDisplay(containerRef.current, {
-          autoResize: true,
-          backend: 'svg',
-          drawTitle: true,
-          drawComposer: true,
-          drawLyricist: true,
-          drawCredits: true,
-          drawPartNames: true,
-          drawingParameters: 'compact',
-        });
+          osmd.zoom = zoomRef.current;
+          osmd.render();
 
-        // Load MusicXML string
-        await osmd.load(musicXML);
-        osmd.zoom = zoom;
-        osmd.render();
+          osmdRef.current = osmd;
 
-        osmdRef.current = osmd;
-
-        // Extract all graphical notes from OSMD's internal structure
-        // This ensures the order matches the logical order in the XML
-        const graphicalNotes: any[] = [];
-        if (osmd.GraphicSheet && osmd.GraphicSheet.MeasureList) {
-          for (const measureList of osmd.GraphicSheet.MeasureList) {
-            for (const measure of measureList) {
-              for (const staffEntry of measure.staffEntries) {
-                for (const voiceEntry of staffEntry.graphicalVoiceEntries) {
-                  for (const note of voiceEntry.notes) {
-                    graphicalNotes.push(note);
+          // Extract graphical notes
+          const gNotes: any[] = [];
+          try {
+            const gs = (osmd as any).GraphicSheet;
+            if (gs?.MeasureList) {
+              for (const row of gs.MeasureList) {
+                for (const m of row) {
+                  for (const se of m?.staffEntries ?? []) {
+                    for (const gve of se?.graphicalVoiceEntries ?? []) {
+                      for (const n of gve?.notes ?? []) {
+                        gNotes.push(n);
+                      }
+                    }
                   }
                 }
               }
             }
+          } catch (e) {
+            console.warn('[SheetViewer] extract graphical notes:', e);
+          }
+          graphicalNotesRef.current = gNotes;
+
+          if (!cancelled) setLoading(false);
+        } catch (err) {
+          if (!cancelled) {
+            setError(`Không thể hiển thị: ${err instanceof Error ? err.message : String(err)}`);
+            setLoading(false);
           }
         }
-        graphicalNotesRef.current = graphicalNotes;
-        console.log('Extracted graphical notes:', graphicalNotes.length);
+      };
 
-        setLoading(false);
+      const tryLoad = () => {
+        const container = containerRef.current;
+        if (!container) return;
 
-      } catch (err) {
-        console.error('Error loading MusicXML:', err);
-        setError(`Không thể hiển thị bản nhạc: ${err instanceof Error ? err.message : String(err)}`);
-        setLoading(false);
+        const w = container.offsetWidth;
+        if (w > 0) {
+          // Container đã có width — load ngay
+          observer?.disconnect();
+          doLoad(container);
+        } else {
+          // Chờ ResizeObserver
+          observer = new ResizeObserver(entries => {
+            for (const entry of entries) {
+              if (entry.contentRect.width > 0) {
+                observer?.disconnect();
+                doLoad(container);
+                break;
+              }
+            }
+          });
+          observer.observe(container);
+        }
+      };
+
+      // Dùng requestAnimationFrame để chắc chắn DOM đã layout
+      const raf = requestAnimationFrame(tryLoad);
+
+      return () => {
+        cancelled = true;
+        cancelAnimationFrame(raf);
+        observer?.disconnect();
+      };
+    }, [musicXML]);
+
+    // ── Zoom ───────────────────────────────────────────────────────────────
+    useEffect(() => {
+      zoomRef.current = zoom;
+      if (osmdRef.current) {
+        osmdRef.current.zoom = zoom;
+        osmdRef.current.render();
       }
-    };
+    }, [zoom]);
 
-    loadMusicXML();
+    // ── Ctrl+Wheel zoom ────────────────────────────────────────────────────
+    useEffect(() => {
+      const el = containerRef.current?.parentElement;
+      if (!el) return;
+      const onWheel = (e: WheelEvent) => {
+        if (!e.ctrlKey) return;
+        e.preventDefault();
+        setZoom(z => Math.min(2.0, Math.max(0.4, z - e.deltaY * 0.001)));
+      };
+      el.addEventListener('wheel', onWheel, { passive: false });
+      return () => el.removeEventListener('wheel', onWheel);
+    }, []);
 
-    return () => {
-      osmdRef.current = null;
-    };
-  }, [musicXML]);
+    // ── Note highlight sync ────────────────────────────────────────────────
+    useEffect(() => {
+      if (!osmdRef.current || loading) return;
+      if (currentNoteIndex === prevIndexRef.current) return;
+      prevIndexRef.current = currentNoteIndex;
 
-  useEffect(() => {
-    if (osmdRef.current) {
-      osmdRef.current.zoom = zoom;
-      osmdRef.current.render();
-    }
-  }, [zoom]);
-
-  // Highlight current note using OSMD's GraphicalModel
-  useEffect(() => {
-    if (!osmdRef.current || currentNoteIndex < 0 || graphicalNotesRef.current.length === 0) return;
-
-    try {
-      // Clear previous highlights
-      highlightedElementsRef.current.forEach(el => {
-        el.style.fill = '';
-        el.style.opacity = '';
+      // Clear cũ
+      highlightedRef.current.forEach(({ el, orig }) => {
+        el.style.fill   = orig;
+        el.style.filter = '';
       });
-      highlightedElementsRef.current = [];
+      highlightedRef.current = [];
 
-      // Get the graphical note at the current index
-      const graphicalNote = graphicalNotesRef.current[currentNoteIndex];
-      if (!graphicalNote) {
-        console.warn('No graphical note found at index:', currentNoteIndex);
-        return;
-      }
+      if (currentNoteIndex < 0) return;
 
-      // Get the SVG element directly from the graphical note
-      const svgElement = graphicalNote.getSVGGElement?.() || graphicalNote.getSVGElement?.();
-      if (!svgElement) {
-        console.warn('No SVG element found for note at index:', currentNoteIndex);
-        return;
-      }
+      const gNote = graphicalNotesRef.current[currentNoteIndex];
+      if (!gNote) return;
 
-      // Highlight the note by modifying its SVG element
-      // Find the notehead path within the group
-      const noteheadPath = svgElement.querySelector('path, circle, ellipse');
-      if (noteheadPath) {
-        const originalFill = noteheadPath.getAttribute('fill') || '';
-        noteheadPath.setAttribute('data-original-fill', originalFill);
-        noteheadPath.setAttribute('fill', '#ff6b6b');
-        noteheadPath.setAttribute('opacity', '0.9');
-        
-        highlightedElementsRef.current.push(noteheadPath as SVGElement);
-        
-        // Scroll to the note
-        svgElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-        
-        console.log('Highlighted note at index:', currentNoteIndex, 'using OSMD GraphicalModel');
-      }
-    } catch (err) {
-      console.error('Error highlighting note:', err);
-    }
-  }, [currentNoteIndex]);
+      try {
+        const svgEl =
+          gNote.getSVGGElement?.() ??
+          gNote.getSVGElement?.() ??
+          null;
+        if (!svgEl) return;
 
-  useImperativeHandle(ref, () => ({
-    highlightNote: (index: number) => {
-      console.log('Highlighting note index:', index);
-      // Additional highlight logic if needed
-    }
-  }));
+        const targets = svgEl.querySelectorAll('path, ellipse, circle');
+        targets.forEach((el: Element) => {
+          const svg = el as SVGElement;
+          const orig = svg.getAttribute('fill') ?? svg.style.fill ?? '';
+          svg.style.fill   = '#6366f1';
+          svg.style.filter = 'drop-shadow(0 0 5px rgba(99,102,241,0.9))';
+          highlightedRef.current.push({ el: svg, orig });
+        });
 
-  const handleZoomIn = () => {
-    setZoom(prev => Math.min(prev + 0.1, 2.0));
-  };
+        svgEl.scrollIntoView?.({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      } catch (_) { /* ignore */ }
+    }, [currentNoteIndex, loading]);
 
-  const handleZoomOut = () => {
-    setZoom(prev => Math.max(prev - 0.1, 0.5));
-  };
+    // ── Imperative handle ──────────────────────────────────────────────────
+    useImperativeHandle(ref, () => ({
+      scrollToCurrentNote: () => {
+        const gNote = graphicalNotesRef.current[currentNoteIndex];
+        const el    = gNote?.getSVGGElement?.() ?? gNote?.getSVGElement?.();
+        el?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      },
+    }));
 
-  const handleZoomReset = () => {
-    setZoom(1.0);
-  };
+    return (
+      <div className="sheet-music-viewer">
+        <div className="viewer-controls">
+          <div className="zoom-controls">
+            <button className="zoom-btn" onClick={() => setZoom(z => Math.max(0.4, +(z - 0.1).toFixed(1)))}>−</button>
+            <span className="zoom-level">{Math.round(zoom * 100)}%</span>
+            <button className="zoom-btn" onClick={() => setZoom(z => Math.min(2.0, +(z + 0.1).toFixed(1)))}>+</button>
+            <button className="zoom-btn" onClick={() => setZoom(1.0)}>Reset</button>
+          </div>
+        </div>
 
-  return (
-    <div className="sheet-music-viewer">
-      <div className="viewer-controls">
-        <div className="zoom-controls">
-          <button onClick={handleZoomOut} className="zoom-btn" title="Zoom Out">
-            🔍−
-          </button>
-          <span className="zoom-level">{Math.round(zoom * 100)}%</span>
-          <button onClick={handleZoomIn} className="zoom-btn" title="Zoom In">
-            🔍+
-          </button>
-          <button onClick={handleZoomReset} className="zoom-btn" title="Reset Zoom">
-            Reset
-          </button>
+        <div className="viewer-content">
+          {loading && (
+            <div className="viewer-loading">
+              <div className="spinner" />
+              <p>Đang tải bản nhạc…</p>
+            </div>
+          )}
+          {error && (
+            <div className="viewer-error"><p>⚠ {error}</p></div>
+          )}
+          {/* QUAN TRỌNG: không dùng display:none — dùng visibility để OSMD vẫn tính được width */}
+          <div
+            ref={containerRef}
+            className="sheet-music-container"
+            style={{ visibility: (loading || error) ? 'hidden' : 'visible', minHeight: 200 }}
+          />
         </div>
       </div>
-
-      <div className="viewer-content">
-        {loading && (
-          <div className="viewer-loading">
-            <div className="spinner"></div>
-            <p>Đang tải bản nhạc...</p>
-          </div>
-        )}
-
-        {error && (
-          <div className="viewer-error">
-            <p>❌ {error}</p>
-          </div>
-        )}
-
-        <div 
-          ref={containerRef} 
-          className="sheet-music-container"
-          style={{ display: loading || error ? 'none' : 'block' }}
-        />
-      </div>
-    </div>
-  );
-});
+    );
+  },
+);
 
 SheetMusicViewer.displayName = 'SheetMusicViewer';
-
 export default SheetMusicViewer;
