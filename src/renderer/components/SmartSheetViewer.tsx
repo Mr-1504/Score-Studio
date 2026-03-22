@@ -8,18 +8,17 @@ interface SmartSheetViewerProps {
 
 const SmartSheetViewer = forwardRef(({ musicData }: SmartSheetViewerProps, ref) => {
   if (musicData.format === 'xml') {
-    return <SheetMusicViewer ref={ref as any} musicXML={musicData.rawContent} />;
+    return <SheetMusicViewer ref={ref} musicXML={musicData.rawContent} />;
   }
 
   if (musicData.format === 'kern') {
     return (
-      <div style={{ padding: '2rem', textAlign: 'center', color: '#a1a1aa' }}>
-        <h3 style={{ color: '#e4e4e7' }}>Hiển thị định dạng **kern</h3>
-        <p>Cần tích hợp Verovio để render. Hiện đang hiển thị raw data:</p>
+      <div style={{ padding: '2rem', textAlign: 'center', color: '#8e8e93' }}>
+        <p style={{ fontSize: 13 }}>Định dạng **kern — chưa hỗ trợ render (cần Verovio)</p>
         <pre style={{
-          textAlign: 'left', background: '#18181b', padding: '1rem',
-          overflow: 'auto', maxHeight: '300px', borderRadius: '8px',
-          fontSize: '12px', color: '#a1a1aa',
+          textAlign: 'left', background: '#2c2c2e', color: '#c7c7cc',
+          padding: '1rem', borderRadius: 8, overflow: 'auto',
+          maxHeight: 300, fontSize: 11,
         }}>
           {musicData.rawContent}
         </pre>
@@ -27,7 +26,7 @@ const SmartSheetViewer = forwardRef(({ musicData }: SmartSheetViewerProps, ref) 
     );
   }
 
-  return <div style={{ color: '#ef4444' }}>Định dạng không được hỗ trợ</div>;
+  return <div style={{ color: '#636366', padding: '2rem' }}>Định dạng không hỗ trợ</div>;
 });
 
 SmartSheetViewer.displayName = 'SmartSheetViewer';

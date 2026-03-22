@@ -106,3 +106,30 @@
 .sheet-music-container .cursor {
   fill: rgba(99, 102, 241, 0.25) !important;
 }
+
+/* Highlight legend */
+.highlight-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: #8e8e93;
+}
+.hl-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.hl-label { color: #636366; }
+
+/* Custom title (thay thế OSMD drawTitle) */
+.sheet-custom-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1c1c1e;
+  padding: 20px 16px 4px;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}

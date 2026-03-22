@@ -2,7 +2,8 @@ import type { NoteEvent, ParsedMusic } from '../types/music';
 import type { NoteResult, NoteVerdict, SessionStats, PracticeMode } from '../types/practice';
 import { EMPTY_STATS } from '../types/practice';
 
-const LATE_MS         = 300;   // ms: trễ hơn này → late
+const LATE_MS_FOLLOW  = 300;   // ms: follow mode — phải bấm nhanh
+const LATE_MS_STEP    = 3000;  // ms: step mode — có thời gian đọc nốt, 3s mới tính late
 const MISS_MS         = 2000;  // ms: follow mode, quá này → miss
 const FLASH_MS        = 500;   // ms: màu flash tắt sau bao lâu
 const SCORE_CORRECT   = 100;
@@ -24,7 +25,7 @@ export interface PracticeCallbacks {
 }
 
 export class PracticeEngine {
-  private music:      ParsedMusic | null = null;
+private music:      ParsedMusic | null = null;
   private mode:       PracticeMode = 'view';
   private cb:         PracticeCallbacks;
   private groups:     NoteEvent[][] = [];  // chord groups
@@ -123,7 +124,8 @@ export class PracticeEngine {
 
     // Đủ chord!
     this._clearMiss();
-    const verdict: NoteVerdict = timing > LATE_MS ? 'late' : 'correct';
+    const lateMs   = this.mode === 'step' ? LATE_MS_STEP : LATE_MS_FOLLOW;
+    const verdict: NoteVerdict = timing > lateMs ? 'late' : 'correct';
     this._record(verdict, expected, [...this.pending], timing);
     this.cb.onVerdictFlash(expected, verdict, FLASH_MS);
 

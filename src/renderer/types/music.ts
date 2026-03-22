@@ -13,13 +13,20 @@ export interface NoteEvent {
   voice: number;
 }
 
+export interface KeySignature {
+  fifths: number;   // -7..7 (âm = giáng, dương = thăng)
+  mode:   'major' | 'minor';
+  label:  string;   // e.g. "G major", "D minor"
+}
+
 export interface ParsedMusic {
   notes: NoteEvent[];
-  temposBPM: TempoChange[];   // danh sách tempo thay đổi
+  temposBPM: TempoChange[];
   timeSignatures: TimeSignature[];
+  keySignatures: KeySignature[];
   totalBeats: number;
-  totalSec: number;           // tính ở tempo đầu tiên
-  divisions: number;          // MusicXML divisions per quarter note
+  totalSec: number;
+  divisions: number;
   title: string;
   composer: string;
 }

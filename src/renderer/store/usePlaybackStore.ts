@@ -128,3 +128,5 @@ export const useSeekAction        = () => usePlaybackStore(s => s.seek);
 export const useSetSpeedAction    = () => usePlaybackStore(s => s.setSpeed);
 export const useInitInstrument    = () => usePlaybackStore(s => s.initInstrument);
 export const useLoadXML           = () => usePlaybackStore(s => s.loadXML);
+
+export const useMusic = () => usePlaybackStore(s => s.music);

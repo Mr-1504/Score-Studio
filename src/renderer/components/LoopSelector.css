@@ -1,0 +1,130 @@
+.loop-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+/* ── Bar ────────────────────────────────────── */
+.ls-bar {
+  position: relative;
+  height: 20px;
+  background: #38383a;
+  border-radius: 3px;
+  cursor: pointer;
+  overflow: visible;
+}
+
+.ls-progress {
+  position: absolute;
+  left: 0; top: 0;
+  height: 100%;
+  background: #2c3a4a;
+  border-radius: 3px;
+  pointer-events: none;
+  transition: width 0.1s linear;
+}
+
+/* Loop region highlight */
+.ls-region {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: rgba(74, 158, 255, 0.15);
+  border-top: 1px solid rgba(74, 158, 255, 0.3);
+  border-bottom: 1px solid rgba(74, 158, 255, 0.3);
+  cursor: grab;
+  z-index: 2;
+}
+.ls-region:active { cursor: grabbing; }
+.ls-region.active {
+  background: rgba(74, 158, 255, 0.25);
+  border-color: rgba(74, 158, 255, 0.6);
+}
+
+/* Drag handles */
+.ls-handle {
+  position: absolute;
+  top: -2px;
+  width: 4px;
+  height: calc(100% + 4px);
+  background: #4a9eff;
+  border-radius: 2px;
+  cursor: ew-resize;
+  z-index: 3;
+  transform: translateX(-2px);
+}
+.ls-handle:hover { background: #7bbfff; }
+
+/* Playhead */
+.ls-playhead {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: calc(100% + 6px);
+  background: #e8e8ea;
+  border-radius: 1px;
+  pointer-events: none;
+  z-index: 4;
+  transform: translateX(-1px);
+  transition: left 0.05s linear;
+}
+
+/* ── Controls row ───────────────────────────── */
+.ls-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 16px;
+}
+
+.ls-loop-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid #38383a;
+  border-radius: 5px;
+  background: transparent;
+  color: #636366;
+  cursor: pointer;
+  transition: all 0.12s;
+  flex-shrink: 0;
+}
+.ls-loop-btn:hover:not(:disabled) { color: #c7c7cc; border-color: #48484a; }
+.ls-loop-btn.active {
+  color: #4a9eff;
+  border-color: #2563a8;
+  background: #1a2f4a;
+}
+.ls-loop-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.ls-region-label {
+  font-size: 10px;
+  color: #4a9eff;
+  font-variant-numeric: tabular-nums;
+}
+
+.ls-clear-btn {
+  font-size: 13px;
+  line-height: 1;
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  color: #636366;
+  cursor: pointer;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.ls-clear-btn:hover { color: #ff453a; background: #3a1210; }
+
+.ls-hint {
+  font-size: 10px;
+  color: #48484a;
+  font-style: italic;
+}

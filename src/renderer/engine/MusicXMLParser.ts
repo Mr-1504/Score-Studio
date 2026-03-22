@@ -41,6 +41,7 @@ export class MusicXMLParser {
     // Parse all notes
     const { notes, totalBeats } = this._parseNotes(doc, divisions, baseBPM);
 
+    const keySignatures = this._parseKeySignatures(doc);
     const totalSec = notes.length > 0
       ? notes[notes.length - 1].startSec + notes[notes.length - 1].durationSec
       : 0;
@@ -49,12 +50,38 @@ export class MusicXMLParser {
       notes,
       temposBPM,
       timeSignatures,
+      keySignatures,
       totalBeats,
       totalSec,
       divisions,
       title,
       composer,
     };
+  }
+
+  private _parseKeySignatures(doc: Document): import('../types/music').KeySignature[] {
+    const MAJOR_KEYS: Record<number, string> = {
+      0:'C', 1:'G', 2:'D', 3:'A', 4:'E', 5:'B', 6:'F#', 7:'C#',
+      '-1':'F', '-2':'Bb', '-3':'Eb', '-4':'Ab', '-5':'Db', '-6':'Gb', '-7':'Cb',
+    };
+    const MINOR_KEYS: Record<number, string> = {
+      0:'A', 1:'E', 2:'B', 3:'F#', 4:'C#', 5:'G#', 6:'D#', 7:'A#',
+      '-1':'D', '-2':'G', '-3':'C', '-4':'F', '-5':'Bb', '-6':'Eb', '-7':'Ab',
+    };
+
+    const keys: import('../types/music').KeySignature[] = [];
+    const seen = new Set<string>();
+
+    doc.querySelectorAll('key').forEach(k => {
+      const fifths = parseInt(k.querySelector('fifths')?.textContent ?? '0');
+      const mode   = (k.querySelector('mode')?.textContent ?? 'major') as 'major' | 'minor';
+      const root   = mode === 'minor' ? MINOR_KEYS[fifths] : MAJOR_KEYS[fifths];
+      const label  = root ? `${root} ${mode}` : `${fifths >= 0 ? '+' : ''}${fifths} fifths`;
+      const uid    = `${fifths}-${mode}`;
+      if (!seen.has(uid)) { seen.add(uid); keys.push({ fifths, mode, label }); }
+    });
+
+    return keys.length ? keys : [{ fifths: 0, mode: 'major', label: 'C major' }];
   }
 
   private _parseTempos(doc: Document, divisions: number): TempoChange[] {
