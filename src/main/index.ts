@@ -1,82 +1,95 @@
-import { app, BrowserWindow, Menu } from 'electron';
+import { app, BrowserWindow, Menu, globalShortcut } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
-// ES Module compatibility
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname  = path.dirname(__filename);
 
-// Load environment variables
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 console.log('Environment variables loaded:', {
-    CONVERT_API_URL: process.env.VITE_CONVERT_API_URL,
-    DOWNLOAD_API_URL: process.env.VITE_DOWNLOAD_API_URL,
-    STATUS_API_URL: process.env.VITE_STATUS_API_URL
+  CONVERT_API_URL:  process.env.VITE_CONVERT_API_URL,
+  DOWNLOAD_API_URL: process.env.VITE_DOWNLOAD_API_URL,
+  STATUS_API_URL:   process.env.VITE_STATUS_API_URL,
 });
-// Import services (this registers IPC handlers)
+
 import './services/converter.js';
 
+let mainWin: BrowserWindow | null = null;
+
 function createWindow() {
-  const win = new BrowserWindow({
+  mainWin = new BrowserWindow({
     width: 1400,
     height: 900,
     webPreferences: {
-      preload: path.join(__dirname, '../preload/index.js'),
+      preload:          path.join(__dirname, '../preload/index.js'),
       contextIsolation: true,
-      nodeIntegration: false,
+      nodeIntegration:  false,
+      devTools:         true,   // bật rõ ràng
     },
   });
 
-  win.once('ready-to-show', () => {
-    win.show();
-    win.webContents.openDevTools({ mode: 'detach' });
-  });
+  const win = mainWin;
 
-  // Create application menu with DevTools toggle
-  const template: any = [
+  Menu.setApplicationMenu(Menu.buildFromTemplate([
     {
       label: 'View',
       submenu: [
         { role: 'reload' },
         { role: 'forceReload' },
-        { role: 'toggleDevTools' },
+        {
+          label: 'Toggle DevTools',
+          accelerator: 'F12',
+          click: () => win.webContents.toggleDevTools(),
+        },
         { type: 'separator' },
         { role: 'resetZoom' },
         { role: 'zoomIn' },
-        { role: 'zoomOut' }
-      ]
-    }
-  ];
+        { role: 'zoomOut' },
+      ],
+    },
+  ]));
 
-  const menu = Menu.buildFromTemplate(template);
-  Menu.setApplicationMenu(menu);
-
-  // Forward renderer console logs to main process terminal
-  win.webContents.on('console-message', (_event, _level, message, _line, _sourceId) => {
+  win.webContents.on('console-message', (_e, _lvl, message) => {
     console.log(`[RENDERER]: ${message}`);
   });
 
-  // Open DevTools automatically in development
-
-  // Trong lúc phát triển thì load từ vite server
   if (process.env.VITE_DEV_SERVER_URL) {
     win.loadURL(process.env.VITE_DEV_SERVER_URL);
   } else {
     win.loadFile(path.join(__dirname, '../renderer/index.html'));
   }
+
+  // Mở DevTools sau khi DOM ready
+  win.webContents.on('dom-ready', () => {
+    win.webContents.openDevTools({ mode: 'detach' });
+  });
+
+  win.on('closed', () => { mainWin = null; });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+
+  // Global shortcut F12 — hoạt động dù window có focus hay không
+  globalShortcut.register('F12', () => {
+    mainWin?.webContents.toggleDevTools();
+  });
+
+  // Ctrl+Shift+I fallback
+  globalShortcut.register('CommandOrControl+Shift+I', () => {
+    mainWin?.webContents.toggleDevTools();
+  });
+});
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
+});
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  if (process.platform !== 'darwin') app.quit();
 });
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
+  if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });

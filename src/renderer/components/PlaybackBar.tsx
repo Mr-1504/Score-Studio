@@ -1,6 +1,3 @@
-// src/renderer/components/PlaybackBar.tsx
-// UPDATED: hiện progress bar khi load soundfont
-
 import { useEffect, useRef } from 'react';
 import {
   usePlaybackStatus,
@@ -26,7 +23,11 @@ function fmt(sec: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-export default function PlaybackBar() {
+interface PlaybackBarProps {
+  onPlay?: () => void;  // override play để App có thể inject auto-start logic
+}
+
+export default function PlaybackBar({ onPlay }: PlaybackBarProps = {}) {
   const status           = usePlaybackStatus();
   const currentSec       = useCurrentSec();
   const duration         = usePlaybackDuration();
@@ -95,7 +96,7 @@ export default function PlaybackBar() {
 
           <button
             className={`pb-btn pb-play${isPlaying ? ' playing' : ''}`}
-            onClick={() => isPlaying ? pause() : play()}
+            onClick={() => isPlaying ? pause() : (onPlay ? onPlay() : play())}
             disabled={!canPlay}
             title={isPlaying ? 'Pause' : 'Play'}
           >

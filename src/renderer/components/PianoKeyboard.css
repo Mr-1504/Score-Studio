@@ -1,12 +1,10 @@
-/* src/renderer/components/PianoKeyboard.css */
-
 .piano-keyboard-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: 8px 0;
-  background: #0a0a0d;
+  padding: 10px 0 8px;
+  background: #161618;
   overflow-x: auto;
   width: 100%;
 }
@@ -16,116 +14,125 @@
   flex-shrink: 0;
 }
 
-/* ── White keys ─────────────────────────── */
+/* White keys */
 .pk-key.pk-white {
   position: absolute;
   top: 0;
   width: 34px;
-  height: 128px;
-  background: #f4f4f5;
-  border: 1px solid #a1a1aa;
+  height: 120px;
+  background: #e8e8ea;
+  border: 1px solid #b0b0b5;
   border-top: none;
   border-radius: 0 0 4px 4px;
   cursor: pointer;
-  transition: background 0.06s, box-shadow 0.06s;
+  transition: background 0.05s;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   padding-bottom: 5px;
 }
+.pk-key.pk-white:hover { background: #d8d8dc; }
 
-.pk-key.pk-white:hover { background: #e4e4e7; }
-
-/* Playback active — indigo */
-.pk-key.pk-white.pk-active {
-  background: #6366f1;
-  border-color: #4f46e5;
-  box-shadow: 0 0 14px 4px rgba(99,102,241,0.55), inset 0 -4px 8px rgba(0,0,0,0.2);
-}
-
-/* Expected next note — dim purple */
-.pk-key.pk-white.pk-expected {
-  background: #e0e7ff;
-  border-color: #a5b4fc;
-  box-shadow: 0 0 8px 2px rgba(165,180,252,0.4);
-}
-
-/* Correct — green */
-.pk-key.pk-white.pk-correct {
-  background: #bbf7d0;
-  border-color: #4ade80;
-  box-shadow: 0 0 12px 3px rgba(74,222,128,0.5);
-}
-
-/* Wrong — red */
-.pk-key.pk-white.pk-wrong {
-  background: #fecaca;
-  border-color: #f87171;
-  box-shadow: 0 0 12px 3px rgba(248,113,113,0.5);
-}
-
-/* Late — yellow */
-.pk-key.pk-white.pk-late {
-  background: #fef08a;
-  border-color: #fbbf24;
-  box-shadow: 0 0 12px 3px rgba(251,191,36,0.5);
-}
-
-/* ── Black keys ─────────────────────────── */
+/* Black keys */
 .pk-key.pk-black {
   position: absolute;
   top: 0;
   width: 22px;
-  height: 80px;
-  background: #18181b;
-  border: 1px solid #09090b;
+  height: 76px;
+  background: #2c2c2e;
+  border: 1px solid #1c1c1e;
   border-top: none;
   border-radius: 0 0 3px 3px;
   cursor: pointer;
   z-index: 2;
-  transition: background 0.06s, box-shadow 0.06s;
+  transition: background 0.05s;
 }
+.pk-key.pk-black:hover { background: #3a3a3c; }
 
-.pk-key.pk-black:hover { background: #27272a; }
+/* ── State colors ───────────────────────── */
 
+/* Playback active — xanh lam */
+.pk-key.pk-white.pk-active {
+  background: #a8d4ff;
+  border-color: #4a9eff;
+  box-shadow: inset 0 -3px 6px rgba(74,158,255,0.3);
+}
 .pk-key.pk-black.pk-active {
-  background: #4f46e5;
-  box-shadow: 0 0 12px 3px rgba(99,102,241,0.7), inset 0 -3px 6px rgba(0,0,0,0.4);
+  background: #2563a8;
+  border-color: #1a3f6b;
+  box-shadow: inset 0 -2px 4px rgba(0,0,0,0.4);
 }
 
+/* Expected — xanh nhạt mờ */
+.pk-key.pk-white.pk-expected {
+  background: #d0e8ff;
+  border-color: #90c4ff;
+}
 .pk-key.pk-black.pk-expected {
-  background: #312e81;
-  box-shadow: 0 0 8px 2px rgba(165,180,252,0.35);
+  background: #1a3050;
+  border-color: #2563a8;
 }
 
+/* Correct — xanh lá */
+.pk-key.pk-white.pk-correct {
+  background: #b8f0c8;
+  border-color: #34c759;
+}
 .pk-key.pk-black.pk-correct {
-  background: #166534;
-  box-shadow: 0 0 10px 3px rgba(74,222,128,0.4);
+  background: #0d3820;
+  border-color: #248a3d;
 }
 
+/* Wrong — đỏ */
+.pk-key.pk-white.pk-wrong {
+  background: #ffc0bc;
+  border-color: #ff453a;
+}
 .pk-key.pk-black.pk-wrong {
-  background: #7f1d1d;
-  box-shadow: 0 0 10px 3px rgba(248,113,113,0.4);
+  background: #3a1210;
+  border-color: #bf2418;
 }
 
+/* Late — vàng cam */
+.pk-key.pk-white.pk-late {
+  background: #ffe0a0;
+  border-color: #ff9f0a;
+}
 .pk-key.pk-black.pk-late {
-  background: #78350f;
-  box-shadow: 0 0 10px 3px rgba(251,191,36,0.4);
+  background: #3a2800;
+  border-color: #b36b00;
 }
 
-/* ── Labels ─────────────────────────────── */
+/* Label */
 .pk-label {
   font-size: 9px;
-  color: #71717a;
+  color: #636366;
   pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
+.pk-key.pk-active  .pk-label,
+.pk-key.pk-correct .pk-label { color: #1c5c8a; }
+
+/* Bottom row */
+.pk-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 900px;
+  padding: 0 8px;
+  min-height: 18px;
+  gap: 12px;
 }
 
-.pk-key.pk-active .pk-label,
-.pk-key.pk-correct .pk-label { color: rgba(255,255,255,0.8); }
-
-/* ── Hint ───────────────────────────────── */
 .pk-hint {
   font-size: 10px;
-  color: #3f3f46;
+  color: #48484a;
   letter-spacing: 0.02em;
+}
+
+.pk-focus-hint {
+  font-size: 10px;
+  color: #636366;
+  font-variant-numeric: tabular-nums;
 }

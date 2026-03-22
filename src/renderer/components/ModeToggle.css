@@ -1,33 +1,23 @@
-/* src/renderer/components/ModeToggle.css */
-
 .mode-toggle {
   display: flex;
   gap: 2px;
-  background: #18181b;
-  border: 1px solid #27272a;
-  border-radius: 8px;
+  background: #2c2c2e;
+  border: 1px solid #38383a;
+  border-radius: 7px;
   padding: 3px;
 }
 
 .mt-btn {
-  padding: 5px 14px;
+  padding: 4px 14px;
   border: none;
   border-radius: 5px;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   background: transparent;
-  color: #71717a;
-  transition: all 0.15s;
+  color: #636366;
+  transition: all 0.12s;
   white-space: nowrap;
 }
-
-.mt-btn:hover {
-  color: #a1a1aa;
-  background: #27272a;
-}
-
-.mt-btn.active {
-  background: #4f46e5;
-  color: #fff;
-}
+.mt-btn:hover  { color: #c7c7cc; background: #38383a; }
+.mt-btn.active { background: #1a2f4a; color: #4a9eff; }

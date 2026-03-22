@@ -1,289 +1,237 @@
-// src/renderer/engine/PracticeEngine.ts
-// REWRITE: Fix các bug:
-//   1. Step mode dùng manual note scheduling thay vì Tone.js Part
-//   2. Verdict flash tự clear sau FLASH_DURATION_MS
-//   3. Follow mode có timeout tự mark miss nếu user không bấm
-//   4. pendingPresses reset khi chuyển nốt mới
-
-import * as Tone from 'tone';
 import type { NoteEvent, ParsedMusic } from '../types/music';
 import type { NoteResult, NoteVerdict, SessionStats, PracticeMode } from '../types/practice';
 import { EMPTY_STATS } from '../types/practice';
 
-const LATE_THRESHOLD_MS  = 250;   // ms — bấm sau threshold này → late
-const FOLLOW_MISS_MS     = 1200;  // ms — follow mode: quá giờ này không bấm → miss
-const FLASH_DURATION_MS  = 600;   // ms — bao lâu thì màu correct/wrong/late tắt
-const SCORE_CORRECT      = 100;
-const SCORE_LATE         = 40;
-const SCORE_COMBO_BONUS  = 10;
+const LATE_MS         = 300;   // ms: trễ hơn này → late
+const MISS_MS         = 2000;  // ms: follow mode, quá này → miss
+const FLASH_MS        = 500;   // ms: màu flash tắt sau bao lâu
+const SCORE_CORRECT   = 100;
+const SCORE_LATE      = 40;
+const SCORE_COMBO_BONUS = 10;
 
-export type VerdictFlashCallback = (
+export type VerdictFlashCb = (
   midi: number[],
   verdict: 'correct' | 'wrong' | 'late',
-  clearAfterMs: number,
+  ms: number,
 ) => void;
 
 export interface PracticeCallbacks {
   onNoteResult:    (result: NoteResult, stats: SessionStats) => void;
-  onExpectedChange:(midi: number[]) => void;   // nốt tiếp theo user cần bấm
-  onVerdictFlash:  VerdictFlashCallback;       // flash màu phím
-  onStepAdvance:   (nextNoteIndex: number) => void;
+  onExpectedChange:(midi: number[]) => void;
+  onVerdictFlash:  VerdictFlashCb;
+  onStepAdvance:   (nextGroupIndex: number) => void;
   onSessionEnd:    (stats: SessionStats) => void;
 }
 
 export class PracticeEngine {
-  private music:     ParsedMusic | null = null;
-  private mode:      PracticeMode = 'view';
-  private callbacks: PracticeCallbacks;
+  private music:      ParsedMusic | null = null;
+  private mode:       PracticeMode = 'view';
+  private cb:         PracticeCallbacks;
+  private groups:     NoteEvent[][] = [];  // chord groups
 
-  private currentNoteIdx: number = 0;
-  private noteOnWallTime: number = 0;    // Date.now() khi note reach user
-  private stats:          SessionStats = { ...EMPTY_STATS };
-  private results:        NoteResult[] = [];
-  private pendingPresses: number[] = [];
-  private active:         boolean = false;
-
+  private active      = false;
+  private curGroup    = 0;
+  private noteOnTime  = 0;
+  private pending:    number[] = [];
+  private stats:      SessionStats = { ...EMPTY_STATS };
   private missTimer:  ReturnType<typeof setTimeout> | null = null;
-  private flashTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(callbacks: PracticeCallbacks) {
-    this.callbacks = callbacks;
-  }
+  constructor(cb: PracticeCallbacks) { this.cb = cb; }
 
-  // ── Setup ──────────────────────────────────────────────────────────────────
+  // ── Setup ─────────────────────────────────────────────────────────────────
 
   loadMusic(music: ParsedMusic): void {
-    this.music = music;
-    this.reset();
+    this.music  = music;
+    this.groups = this._buildGroups(music);
+    this._reset();
   }
 
-  setMode(mode: PracticeMode): void {
-    this.mode = mode;
-  }
-
-  // ── Session ────────────────────────────────────────────────────────────────
+  setMode(m: PracticeMode): void { this.mode = m; }
 
   start(): void {
-    if (!this.music) return;
-    this.reset();
-    this.active = true;
+    this._reset();
+    this.active     = true;
+    this.noteOnTime = Date.now(); // prevent unix-timestamp timing when pressed before first note
+    console.log('[Practice] started, mode:', this.mode, 'groups:', this.groups.length);
+    this.cb.onExpectedChange(this._expected(0));
   }
 
   stop(): void {
-    this._clearTimers();
+    this._clearMiss();
     this.active = false;
   }
 
-  reset(): void {
-    this._clearTimers();
-    this.currentNoteIdx = 0;
-    this.noteOnWallTime = 0;
-    this.stats          = { ...EMPTY_STATS, totalNotes: this.music?.notes.length ?? 0 };
-    this.results        = [];
-    this.pendingPresses = [];
-    this.active         = false;
-  }
-
-  // ── Called by PlaybackStore khi Transport đến note mới ────────────────────
-  // Đây là hook chính — được gọi từ Tone.getDraw().schedule trong PlaybackEngine
+  // ── Called từ PlaybackEngine khi note phát ────────────────────────────────
 
   onNoteReached(noteIndex: number): void {
     if (!this.active || this.mode === 'view') return;
 
-    this._clearTimers();
-    this.currentNoteIdx = noteIndex;
-    this.noteOnWallTime = Date.now();
-    this.pendingPresses = [];
+    // Tìm group tương ứng với noteIndex này
+    const gi = this.groups.findIndex(g => g.some(n => n.noteIndex === noteIndex));
+    if (gi === -1) return;
 
-    const expected = this._getExpectedMidi(noteIndex);
-    this.callbacks.onExpectedChange(expected);
+    this._clearMiss();
+    this.curGroup  = gi;
+    this.noteOnTime = Date.now();
+    this.pending   = [];
 
-    if (this.mode === 'step') {
-      // Step: pause ngay sau khi note hiện ra, chờ user bấm
-      // Dùng setTimeout nhỏ để audio note kịp phát trước khi pause
-      setTimeout(() => {
-        if (this.active && this.mode === 'step') {
-          Tone.getTransport().pause();
-        }
-      }, 50);
+    this.cb.onExpectedChange(this._expected(gi));
+    console.log('[Practice] note reached, group:', gi, 'expected:', this._expected(gi));
 
-    } else if (this.mode === 'follow') {
-      // Follow: set timer miss nếu user không bấm đúng hạn
+    if (this.mode === 'follow') {
       this.missTimer = setTimeout(() => {
-        if (!this.active || this.mode !== 'follow') return;
-        // Chưa bấm gì → mark miss (wrong)
-        const allPressed = expected.every(m => this.pendingPresses.includes(m));
-        if (!allPressed) {
-          this._recordResult('wrong', expected, [], FOLLOW_MISS_MS);
-          this.callbacks.onVerdictFlash(expected, 'wrong', FLASH_DURATION_MS);
+        if (!this.active) return;
+        const got = this._expected(this.curGroup).every(m => this.pending.includes(m));
+        if (!got) {
+          this._record('wrong', this._expected(this.curGroup), [], MISS_MS);
+          this.cb.onVerdictFlash(this._expected(this.curGroup), 'wrong', FLASH_MS);
         }
-      }, FOLLOW_MISS_MS);
+      }, MISS_MS);
     }
   }
 
-  // ── User bấm phím ─────────────────────────────────────────────────────────
+  // ── Called khi user bấm phím ──────────────────────────────────────────────
 
-  onUserKeyPress(midiNote: number): void {
-    if (!this.active || this.mode === 'view' || !this.music) return;
+  onUserKeyPress(midi: number): void {
+    if (!this.active || this.mode === 'view') return;
 
-    const timingMs = Date.now() - this.noteOnWallTime;
-    const expected = this._getExpectedMidi(this.currentNoteIdx);
-    if (!expected.length) return;
+    const timing   = Date.now() - this.noteOnTime;
+    const expected = this._expected(this.curGroup);
+    console.log('[Practice] key press:', midi, 'expected:', expected, 'timing:', timing);
 
-    // Thêm vào pending nếu chưa có
-    if (!this.pendingPresses.includes(midiNote)) {
-      this.pendingPresses.push(midiNote);
+    if (!expected.length) {
+      console.warn('[Practice] no expected notes!');
+      return;
     }
 
-    // Bấm nốt không nằm trong expected → wrong ngay
-    if (!expected.includes(midiNote)) {
-      this._recordResult('wrong', expected, [midiNote], timingMs);
-      this.callbacks.onVerdictFlash([midiNote], 'wrong', FLASH_DURATION_MS);
+    // Bấm nốt không nằm trong chord → wrong
+    if (!expected.includes(midi)) {
+      this._record('wrong', expected, [midi], timing);
+      this.cb.onVerdictFlash([midi], 'wrong', FLASH_MS);
       if (this.mode === 'step') {
-        // Step mode: wrong → clear pending, chờ lại
-        this.pendingPresses = [];
-        this.noteOnWallTime = Date.now(); // reset timing
+        // Reset để cho bấm lại
+        this.pending    = [];
+        this.noteOnTime = Date.now();
       }
       return;
     }
 
-    // Kiểm tra đã bấm đủ chord chưa
-    const allPressed = expected.every(m => this.pendingPresses.includes(m));
-    if (!allPressed) return; // chờ thêm nốt chord
+    if (!this.pending.includes(midi)) this.pending.push(midi);
 
-    // Đủ chord → evaluate
-    this._clearTimers();
+    // Chưa đủ chord
+    if (!expected.every(m => this.pending.includes(m))) return;
 
-    const verdict: NoteVerdict = timingMs > LATE_THRESHOLD_MS ? 'late' : 'correct';
-    this._recordResult(verdict, expected, [...this.pendingPresses], timingMs);
-    this.callbacks.onVerdictFlash(expected, verdict, FLASH_DURATION_MS);
+    // Đủ chord!
+    this._clearMiss();
+    const verdict: NoteVerdict = timing > LATE_MS ? 'late' : 'correct';
+    this._record(verdict, expected, [...this.pending], timing);
+    this.cb.onVerdictFlash(expected, verdict, FLASH_MS);
+
+    const next = this.curGroup + 1;
 
     if (this.mode === 'step') {
-      const nextIdx = this._nextNoteIdx(this.currentNoteIdx);
-      this.callbacks.onStepAdvance(nextIdx);
-
-      if (nextIdx >= this.music.notes.length) {
-        this._endSession();
+      if (next >= this.groups.length) {
+        this._end();
       } else {
-        // Advance đến note tiếp theo
-        this.currentNoteIdx = nextIdx;
-        this.noteOnWallTime = Date.now();
-        this.pendingPresses = [];
-        const nextExpected = this._getExpectedMidi(nextIdx);
-        this.callbacks.onExpectedChange(nextExpected);
-        // Resume Transport một chút để phát note, rồi pause lại
-        Tone.getTransport().start();
-        setTimeout(() => {
-          if (this.active && this.mode === 'step') {
-            Tone.getTransport().pause();
-          }
-        }, 300); // đủ thời gian để note phát
+        // Báo PlaybackEngine phát note tiếp
+        this.cb.onStepAdvance(next);
+        this.curGroup   = next;
+        this.noteOnTime = Date.now();
+        this.pending    = [];
+        this.cb.onExpectedChange(this._expected(next));
       }
     }
+    // Follow: nhạc tự chạy, không làm gì thêm
   }
-
-  // ── Song end ──────────────────────────────────────────────────────────────
 
   onSongEnd(): void {
-    if (!this.active) return;
-    this._endSession();
+    if (this.active) this._end();
   }
 
-  // ── Getters ───────────────────────────────────────────────────────────────
+  get isActive()    { return this.active; }
+  get groupCount()  { return this.groups.length; }
+  get practiceMode() { return this.mode; }
+  get currentStats() { return { ...this.stats }; }
 
-  get isActive():     boolean      { return this.active; }
-  get practiceMode(): PracticeMode { return this.mode; }
-  get currentStats(): SessionStats { return { ...this.stats }; }
-
-  getExpectedMidiAt(noteIndex: number): number[] {
-    return this._getExpectedMidi(noteIndex);
+  getExpectedMidiAt(gi: number): number[] {
+    return this._expected(gi);
   }
 
   // ── Private ───────────────────────────────────────────────────────────────
 
-  private _getExpectedMidi(idx: number): number[] {
-    if (!this.music) return [];
-    const notes = this.music.notes;
-    if (idx >= notes.length) return [];
-
-    const base = notes[idx];
-    const group = [base.midiNote];
-    let i = idx + 1;
-    while (
-      i < notes.length &&
-      notes[i].chordGroupId === base.chordGroupId &&
-      notes[i].isChord
-    ) {
-      group.push(notes[i].midiNote);
-      i++;
-    }
-    return group;
+  private _expected(gi: number): number[] {
+    if (gi < 0 || gi >= this.groups.length) return [];
+    return this.groups[gi].map(n => n.midiNote);
   }
 
-  private _nextNoteIdx(idx: number): number {
-    if (!this.music) return idx + 1;
-    const notes = this.music.notes;
-    const base  = notes[idx];
-    let i = idx + 1;
-    // Skip các nốt cùng chord
-    while (
-      i < notes.length &&
-      notes[i].chordGroupId === base.chordGroupId &&
-      notes[i].isChord
-    ) {
-      i++;
+  private _buildGroups(music: ParsedMusic): NoteEvent[][] {
+    const result: NoteEvent[][] = [];
+    const notes = music.notes;
+    let i = 0;
+    while (i < notes.length) {
+      const base = notes[i];
+      const g    = [base];
+      let j = i + 1;
+      while (j < notes.length &&
+             notes[j].chordGroupId === base.chordGroupId &&
+             notes[j].isChord) {
+        g.push(notes[j]); j++;
+      }
+      result.push(g);
+      i = j;
     }
-    return i;
+    return result;
   }
 
-  private _recordResult(
+  private _record(
     verdict: NoteVerdict,
-    expectedMidi: number[],
-    pressedMidi: number[],
-    timingMs: number,
+    expected: number[],
+    pressed: number[],
+    timing: number,
   ): void {
     const result: NoteResult = {
-      noteIndex: this.currentNoteIdx,
-      expectedMidi,
-      pressedMidi,
+      noteIndex:    this.groups[this.curGroup]?.[0]?.noteIndex ?? this.curGroup,
+      expectedMidi: expected,
+      pressedMidi:  pressed,
       verdict,
-      timingMs,
+      timingMs:     timing,
     };
-    this.results.push(result);
 
     const s = this.stats;
     if (verdict === 'correct') {
-      s.correct++;
-      s.currentCombo++;
+      s.correct++; s.currentCombo++;
       s.score += SCORE_CORRECT + s.currentCombo * SCORE_COMBO_BONUS;
     } else if (verdict === 'late') {
-      s.late++;
-      s.currentCombo++;
+      s.late++; s.currentCombo++;
       s.score += SCORE_LATE;
     } else {
-      s.wrong++;
-      s.currentCombo = 0;
+      s.wrong++; s.currentCombo = 0;
     }
-
     s.maxCombo = Math.max(s.maxCombo, s.currentCombo);
-    const evaluated = s.correct + s.wrong + s.late;
-    s.accuracy = evaluated > 0
-      ? Math.round(((s.correct + s.late * 0.5) / evaluated) * 100)
-      : 0;
-    const prevTotal = (evaluated - 1) * s.avgTimingMs;
-    s.avgTimingMs   = Math.round((prevTotal + timingMs) / evaluated);
+    const ev = s.correct + s.wrong + s.late;
+    s.accuracy     = ev > 0 ? Math.round(((s.correct + s.late * 0.5) / ev) * 100) : 0;
+    s.avgTimingMs  = ev > 0 ? Math.round(((ev - 1) * s.avgTimingMs + timing) / ev) : 0;
 
-    this.callbacks.onNoteResult(result, { ...s });
+    console.log('[Practice] verdict:', verdict, 'stats:', s.correct, s.wrong, s.late, 'score:', s.score);
+    this.cb.onNoteResult(result, { ...s });
   }
 
-  private _endSession(): void {
-    this._clearTimers();
+  private _end(): void {
+    this._clearMiss();
     this.active = false;
-    this.callbacks.onSessionEnd({ ...this.stats });
+    this.cb.onSessionEnd({ ...this.stats });
   }
 
-  private _clearTimers(): void {
-    if (this.missTimer)  { clearTimeout(this.missTimer);  this.missTimer  = null; }
-    if (this.flashTimer) { clearTimeout(this.flashTimer); this.flashTimer = null; }
+  private _reset(): void {
+    this._clearMiss();
+    this.curGroup   = 0;
+    this.noteOnTime = 0;
+    this.pending    = [];
+    this.active     = false;
+    this.stats      = { ...EMPTY_STATS, totalNotes: this.groups.length };
+  }
+
+  private _clearMiss(): void {
+    if (this.missTimer) { clearTimeout(this.missTimer); this.missTimer = null; }
   }
 }

@@ -1,24 +1,48 @@
-/* src/renderer/App.css — Phase 2 */
-
 :root {
-  --bg-app:       #09090b;
-  --bg-panel:     #0d0d0f;
-  --border:       #1e1e24;
-  --text-primary: #e4e4e7;
-  --text-muted:   #71717a;
-  --accent:       #4f46e5;
+  /* Nền: xám than (không phải đen tuyền) */
+  --bg-base:    #1c1c1e;   /* nền tổng */
+  --bg-surface: #242426;   /* sidebar, panel */
+  --bg-raised:  #2c2c2e;   /* card, input, button */
+  --bg-hover:   #333335;   /* hover state */
+
+  --border-dim:  #38383a;
+  --border-mid:  #48484a;
+
+  /* Chữ: tương phản rõ ràng */
+  --text-hi:   #f2f2f7;   /* tiêu đề, số quan trọng */
+  --text-main: #c7c7cc;   /* body text */
+  --text-soft: #8e8e93;   /* label, hint */
+  --text-dim:  #636366;   /* placeholder */
+
+  /* Accent: xanh lam lạnh — không chói */
+  --accent:       #4a9eff;   /* interactive, active */
+  --accent-dim:   #2563a8;   /* border khi active */
+  --accent-bg:    #1a2f4a;   /* background tint */
+
+  /* Trạng thái */
+  --ok:    #34c759;
+  --ok-bg: #0d2b17;
+  --warn:  #ff9f0a;
+  --warn-bg: #2a1f07;
+  --err:   #ff453a;
+  --err-bg: #2b0f0d;
+  --info:  #64d2ff;
+  --info-bg: #0d2535;
 }
 
 * { box-sizing: border-box; }
 
 body, #root {
   margin: 0; padding: 0;
-  background: var(--bg-app);
-  color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-base);
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ── App shell ──────────────────────────────────────── */
+/* ── App shell ──────────────────────────────────── */
 .app-layout {
   display: flex;
   width: 100vw;
@@ -26,33 +50,34 @@ body, #root {
   overflow: hidden;
 }
 
-/* ── Sidebar ────────────────────────────────────────── */
+/* ── Sidebar ────────────────────────────────────── */
 .sidebar {
   width: 220px;
   min-width: 200px;
-  background: var(--bg-panel);
-  border-right: 1px solid var(--border);
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-dim);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
 }
 
 .brand {
-  padding: 18px 16px 12px;
-  border-bottom: 1px solid var(--border);
+  padding: 16px 14px 12px;
+  border-bottom: 1px solid var(--border-dim);
 }
 
 .brand h1 {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
+  color: var(--text-hi);
+  margin: 0 0 2px;
+  letter-spacing: -0.2px;
 }
 
 .brand p {
   font-size: 10px;
-  color: var(--text-muted);
-  margin: 2px 0 0;
+  color: var(--text-dim);
+  margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -61,7 +86,7 @@ body, #root {
   padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .form-group {
@@ -72,24 +97,26 @@ body, #root {
 
 .form-group label {
   font-size: 10px;
-  color: var(--text-muted);
+  color: var(--text-soft);
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
 }
 
 .engine-select {
-  background: #18181b;
-  border: 1px solid #27272a;
-  color: var(--text-primary);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-dim);
+  color: var(--text-main);
   border-radius: 6px;
   padding: 6px 8px;
   font-size: 12px;
   outline: none;
+  width: 100%;
+  cursor: pointer;
 }
+.engine-select:focus { border-color: var(--accent-dim); }
 
-.engine-select:focus { border-color: var(--accent); }
-
+/* Buttons */
 .btn {
   padding: 7px 12px;
   border-radius: 6px;
@@ -97,64 +124,88 @@ body, #root {
   font-weight: 500;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: all 0.15s;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
+  width: 100%;
 }
-
-.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn:disabled { opacity: 0.38; cursor: not-allowed; }
 
 .btn-outline {
-  background: transparent;
-  border-color: #27272a;
-  color: #a1a1aa;
+  background: var(--bg-raised);
+  border-color: var(--border-dim);
+  color: var(--text-main);
 }
-.btn-outline:hover:not(:disabled) { border-color: #3f3f46; color: var(--text-primary); background: #18181b; }
+.btn-outline:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--border-mid);
+  color: var(--text-hi);
+}
 
-.btn-primary { background: var(--accent); color: white; }
-.btn-primary:hover:not(:disabled) { background: #4338ca; }
+.btn-primary {
+  background: var(--accent-bg);
+  border-color: var(--accent-dim);
+  color: var(--accent);
+}
+.btn-primary:hover:not(:disabled) {
+  background: #1f3a5f;
+  border-color: var(--accent);
+  color: #7bbfff;
+}
 
 .file-list {
   font-size: 11px;
-  color: var(--text-muted);
-  padding: 4px 6px;
-  background: #18181b;
-  border-radius: 4px;
+  color: var(--text-soft);
+  padding: 4px 7px;
+  background: var(--bg-raised);
+  border-radius: 5px;
+  border: 1px solid var(--border-dim);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* Status boxes */
 .status-box {
   font-size: 11px;
   padding: 8px 10px;
   border-radius: 6px;
   border: 1px solid transparent;
-  line-height: 1.4;
+  line-height: 1.5;
+}
+.status-idle       { background: var(--bg-raised); color: var(--text-soft); border-color: var(--border-dim); }
+.status-processing { background: var(--info-bg);   color: var(--info);      border-color: #1a4060; }
+.status-ready      { background: var(--ok-bg);     color: var(--ok);        border-color: #1a4a28; }
+.status-error      { background: var(--err-bg);    color: var(--err);       border-color: #4a1a18; }
+
+.progress-bar {
+  height: 3px;
+  background: var(--border-dim);
+  border-radius: 2px;
+  margin-top: 7px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.3s ease;
 }
 
-.status-idle       { background: #18181b; color: var(--text-muted); border-color: #27272a; }
-.status-processing { background: #1e1b4b; color: #818cf8; border-color: #3730a3; }
-.status-ready      { background: #052e16; color: #4ade80; border-color: #166534; }
-.status-error      { background: #450a0a; color: #f87171; border-color: #991b1b; }
-
-.progress-bar { height: 3px; background: #27272a; border-radius: 2px; margin-top: 6px; overflow: hidden; }
-.progress-fill { height: 100%; background: var(--accent); transition: width 0.3s ease; }
-
-/* ── Main area (right of sidebar) ───────────────────── */
+/* ── Main area ──────────────────────────────────── */
 .main-area {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background: var(--bg-base);
 }
 
-/* Top toolbar (mode toggle) */
 .top-toolbar {
-  height: 48px;
-  background: var(--bg-panel);
-  border-bottom: 1px solid var(--border);
+  height: 46px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-dim);
   display: flex;
   align-items: center;
   padding: 0 16px;
@@ -162,14 +213,12 @@ body, #root {
   flex-shrink: 0;
 }
 
-/* Content row: workspace-column + score panel */
 .content-row {
   flex: 1;
   display: flex;
   overflow: hidden;
 }
 
-/* ── Workspace column ───────────────────────────────── */
 .workspace-column {
   flex: 1;
   display: flex;
@@ -181,31 +230,25 @@ body, #root {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  background: var(--bg-base);
 }
 
-.sheet-area {
-  height: 100%;
-  overflow-y: auto;
-}
+.sheet-area { height: 100%; overflow-y: auto; }
 
 .piano-area {
   flex-shrink: 0;
-  border-top: 1px solid var(--border);
-  background: #0a0a0d;
+  border-top: 1px solid var(--border-dim);
+  background: #161618;
   overflow-x: auto;
 }
 
-/* Empty state */
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
-  gap: 16px;
-  color: #3f3f46;
+  gap: 14px;
 }
-
-.empty-state svg { opacity: 0.3; }
-
-.empty-state p { font-size: 13px; color: #52525b; margin: 0; }
+.empty-state svg   { opacity: 0.18; color: var(--text-soft); }
+.empty-state p     { font-size: 13px; color: var(--text-dim); margin: 0; }

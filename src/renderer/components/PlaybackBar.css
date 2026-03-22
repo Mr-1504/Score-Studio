@@ -1,66 +1,46 @@
-/* src/renderer/components/PlaybackBar.css */
-/* DAW-style bottom transport bar */
-
 .playback-bar {
   display: flex;
   align-items: center;
   gap: 20px;
-  height: 64px;
+  height: 60px;
   padding: 0 20px;
-  background: #0d0d0f;
-  border-top: 1px solid #1e1e24;
+  background: #1c1c1e;
+  border-top: 1px solid #38383a;
   flex-shrink: 0;
   user-select: none;
 }
 
-/* ── Track info (left) ─────────────────────────────────── */
 .pb-track-info {
   display: flex;
   flex-direction: column;
-  min-width: 160px;
-  max-width: 220px;
+  min-width: 150px;
+  max-width: 210px;
   overflow: hidden;
+  gap: 2px;
 }
 
 .pb-title {
   font-size: 12px;
   font-weight: 500;
-  color: #e4e4e7;
+  color: #f2f2f7;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.pb-loading {
-  font-size: 11px;
-  color: #6366f1;
-  animation: pb-pulse 1.5s ease-in-out infinite;
-}
+.pb-loading { font-size: 11px; color: #64d2ff; }
+.pb-error   { font-size: 11px; color: #ff453a; }
 
-.pb-error {
-  font-size: 11px;
-  color: #ef4444;
-}
-
-@keyframes pb-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-/* ── Center (transport + timeline) ────────────────────── */
+/* Center */
 .pb-center {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
-.pb-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+.pb-controls { display: flex; align-items: center; gap: 8px; }
 
 .pb-btn {
   display: flex;
@@ -69,62 +49,35 @@
   border: none;
   cursor: pointer;
   border-radius: 50%;
-  transition: background 0.15s, transform 0.1s;
-  color: #a1a1aa;
+  transition: background 0.12s, transform 0.08s;
+  color: #8e8e93;
   background: transparent;
 }
+.pb-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.pb-btn:hover:not(:disabled) { color: #c7c7cc; background: #2c2c2e; }
+.pb-btn:active:not(:disabled) { transform: scale(0.92); }
 
-.pb-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-.pb-btn:hover:not(:disabled) {
-  color: #e4e4e7;
-  background: #1e1e24;
-}
-
-.pb-btn:active:not(:disabled) {
-  transform: scale(0.93);
-}
-
-.pb-stop {
-  width: 30px;
-  height: 30px;
-}
+.pb-stop { width: 28px; height: 28px; }
 
 .pb-play {
-  width: 40px;
-  height: 40px;
-  background: #18181b;
-  border: 1px solid #2e2e38;
-  color: #e4e4e7;
+  width: 38px;
+  height: 38px;
+  background: #2c2c2e;
+  border: 1px solid #48484a;
+  color: #c7c7cc;
 }
-
-.pb-play.playing {
-  color: #6366f1;
-  border-color: #4f46e5;
-}
-
-.pb-play:hover:not(:disabled) {
-  background: #27272a;
-  border-color: #6366f1;
-  color: #a5b4fc;
-}
+.pb-play.playing { color: #4a9eff; border-color: #2563a8; }
+.pb-play:hover:not(:disabled) { background: #333335; border-color: #636366; color: #f2f2f7; }
 
 .pb-spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid #3f3f46;
-  border-top-color: #6366f1;
+  width: 13px; height: 13px;
+  border: 2px solid #48484a;
+  border-top-color: #4a9eff;
   border-radius: 50%;
   animation: pb-spin 0.8s linear infinite;
   display: inline-block;
 }
-
-@keyframes pb-spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes pb-spin { to { transform: rotate(360deg); } }
 
 /* Timeline */
 .pb-timeline {
@@ -132,13 +85,13 @@
   align-items: center;
   gap: 8px;
   width: 100%;
-  max-width: 520px;
+  max-width: 500px;
 }
 
 .pb-time {
   font-size: 11px;
   font-variant-numeric: tabular-nums;
-  color: #71717a;
+  color: #636366;
   min-width: 36px;
   text-align: center;
 }
@@ -155,7 +108,7 @@
   position: absolute;
   left: 0;
   height: 3px;
-  background: #6366f1;
+  background: #4a9eff;
   border-radius: 2px;
   pointer-events: none;
   transition: width 0.1s linear;
@@ -168,39 +121,29 @@
   height: 3px;
   -webkit-appearance: none;
   appearance: none;
-  background: #27272a;
+  background: #38383a;
   border-radius: 2px;
   cursor: pointer;
   outline: none;
 }
-
 .pb-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 12px;
-  height: 12px;
+  width: 12px; height: 12px;
   border-radius: 50%;
-  background: #6366f1;
+  background: #4a9eff;
   cursor: pointer;
-  box-shadow: 0 0 0 2px #0d0d0f;
   transition: transform 0.1s;
 }
+.pb-slider::-webkit-slider-thumb:hover { transform: scale(1.3); }
+.pb-slider:disabled { opacity: 0.25; cursor: not-allowed; }
 
-.pb-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.3);
-}
-
-.pb-slider:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-/* ── Speed (right) ─────────────────────────────────────── */
+/* Speed */
 .pb-right {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 4px;
-  min-width: 160px;
+  min-width: 155px;
 }
 
 .pb-speed-label {
@@ -208,59 +151,45 @@
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  color: #71717a;
+  color: #636366;
 }
-
-.pb-speed-value {
-  color: #a1a1aa;
-  font-variant-numeric: tabular-nums;
-  min-width: 36px;
-  text-align: right;
-}
+.pb-speed-value { color: #8e8e93; font-variant-numeric: tabular-nums; min-width: 34px; text-align: right; }
 
 .pb-speed-slider {
   width: 100%;
   height: 3px;
   -webkit-appearance: none;
   appearance: none;
-  background: #27272a;
+  background: #38383a;
   border-radius: 2px;
   cursor: pointer;
   outline: none;
 }
-
 .pb-speed-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 10px;
-  height: 10px;
+  width: 10px; height: 10px;
   border-radius: 50%;
-  background: #a78bfa;
+  background: #8e8e93;
   cursor: pointer;
 }
 
-.pb-speed-presets {
-  display: flex;
-  gap: 4px;
-}
+.pb-speed-presets { display: flex; gap: 4px; }
 
 .pb-preset {
   font-size: 10px;
   padding: 2px 5px;
   border-radius: 4px;
-  border: 1px solid #27272a;
+  border: 1px solid #38383a;
   background: transparent;
-  color: #52525b;
+  color: #636366;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.12s;
 }
+.pb-preset:hover  { color: #8e8e93; border-color: #48484a; }
+.pb-preset.active { color: #4a9eff; border-color: #2563a8; background: #1a2f4a; }
 
-.pb-preset:hover {
-  color: #a1a1aa;
-  border-color: #3f3f46;
-}
-
-.pb-preset.active {
-  color: #a78bfa;
-  border-color: #7c3aed;
-  background: #1e1b4b;
-}
+/* Soundfont progress */
+.pb-sf-progress { display: flex; flex-direction: column; gap: 3px; margin-top: 2px; }
+.pb-sf-bar { width: 130px; height: 3px; background: #38383a; border-radius: 2px; overflow: hidden; }
+.pb-sf-fill { height: 100%; background: #4a9eff; transition: width 0.2s ease; }
+.pb-sf-label { font-size: 10px; color: #64d2ff; }

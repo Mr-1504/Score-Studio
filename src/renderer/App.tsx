@@ -1,6 +1,3 @@
-// src/renderer/App.tsx — Phase 2
-// Thêm: ModeToggle, ScorePanel, ResultModal
-
 import { useState, useEffect } from 'react';
 import './App.css';
 import SmartSheetViewer from './components/SmartSheetViewer';
@@ -11,6 +8,8 @@ import ScorePanel from './components/ScorePanel';
 import ResultModal from './components/ResultModal';
 import { useLoadXML } from './store/usePlaybackStore';
 import { usePracticeMode } from './store/usePracticeStore';
+// Import bridge để kích hoạt toàn bộ wiring PlaybackStore ↔ PracticeStore
+import { bridgePlay } from './store/bridge';
 import type { EngineType, MusicData } from './types';
 
 function App() {
@@ -21,9 +20,9 @@ function App() {
   });
   const [musicData, setMusicData] = useState<MusicData | null>(null);
 
-  const loadXML    = useLoadXML();
+  const loadXML      = useLoadXML();
   const practiceMode = usePracticeMode();
-  const isReady    = musicData && conversionState.status === 'ready';
+  const isReady      = !!musicData && conversionState.status === 'ready';
 
   useEffect(() => {
     const handleProgress = (data: any) => {
@@ -45,8 +44,8 @@ function App() {
         setSelectedFiles(files);
         setConversionState({ status: 'idle', message: `Đã chọn ${files.length} file.`, progress: 0 });
       }
-    } catch (error) {
-      setConversionState({ status: 'error', message: `Lỗi: ${error}`, progress: 0 });
+    } catch (e) {
+      setConversionState({ status: 'error', message: `Lỗi: ${e}`, progress: 0 });
     }
   };
 
@@ -54,73 +53,57 @@ function App() {
     if (!selectedFiles.length) return;
     try {
       setConversionState({ status: 'processing', message: 'Đang gửi dữ liệu...', progress: 10 });
-      const convertResult = await window.electron.uploadAndConvert(selectedFiles[0], engine);
+      const result = await window.electron.uploadAndConvert(selectedFiles[0], engine);
 
       if (engine === 'AUDIVERIS_XML') {
-        setConversionState({ status: 'processing', message: 'Đang tải file MusicXML...', progress: 90 });
-        const dl = await window.electron.downloadMusicXML(convertResult.jobId);
+        setConversionState({ status: 'processing', message: 'Đang tải MusicXML...', progress: 90 });
+        const dl = await window.electron.downloadMusicXML(result.jobId);
         if (dl.success) {
-          const data: MusicData = { rawContent: dl.xmlContent, format: 'xml' };
-          setMusicData(data);
-          loadXML(dl.xmlContent);
-          setConversionState({ status: 'ready', message: 'Sẵn sàng phát nhạc!', progress: 100 });
+          setMusicData({ rawContent: dl.xmlContent, format: 'xml' });
+          loadXML(dl.xmlContent); // bridge sẽ tự detect music change → loadMusic practice
+          setConversionState({ status: 'ready', message: 'Sẵn sàng!', progress: 100 });
         }
       } else {
         const mockKern = `**kern\n*clefG2\n*k[f#]\n*M4/4\n=1\n4c\n4d\n4e\n4f\n==\n*-`;
         setMusicData({ rawContent: mockKern, format: 'kern' });
-        setConversionState({ status: 'ready', message: 'Dữ liệu AI đã sẵn sàng!', progress: 100 });
+        setConversionState({ status: 'ready', message: 'Sẵn sàng!', progress: 100 });
       }
-    } catch (error: any) {
-      setConversionState({ status: 'error', message: `Lỗi: ${error.message}`, progress: 0 });
+    } catch (e: any) {
+      setConversionState({ status: 'error', message: `Lỗi: ${e.message}`, progress: 0 });
     }
   };
 
   return (
     <div className="app-layout">
-
-      {/* SIDEBAR */}
       <aside className="sidebar">
         <div className="brand">
           <h1>Score Studio</h1>
           <p>Sheet Music Engine</p>
         </div>
-
         <div className="controls-section">
           <div className="form-group">
             <label>Processing Engine</label>
-            <select
-              className="engine-select"
-              value={engine}
+            <select className="engine-select" value={engine}
               onChange={e => setEngine(e.target.value as EngineType)}
-              disabled={conversionState.status === 'processing'}
-            >
+              disabled={conversionState.status === 'processing'}>
               <option value="AUDIVERIS_XML">Audiveris (MusicXML)</option>
               <option value="CUSTOM_MODEL_KERN">Custom Model (**kern)</option>
             </select>
           </div>
-
           <div className="form-group">
             <label>Input File</label>
-            <button
-              onClick={handleSelectFiles}
-              className="btn btn-outline"
-              disabled={conversionState.status === 'processing'}
-            >
+            <button onClick={handleSelectFiles} className="btn btn-outline"
+              disabled={conversionState.status === 'processing'}>
               📄 Chọn ảnh Sheet nhạc
             </button>
             {selectedFiles.length > 0 && (
               <div className="file-list">✓ {selectedFiles[0].split(/[/\\]/).pop()}</div>
             )}
           </div>
-
-          <button
-            onClick={handleConvert}
-            className="btn btn-primary"
-            disabled={!selectedFiles.length || conversionState.status === 'processing'}
-          >
+          <button onClick={handleConvert} className="btn btn-primary"
+            disabled={!selectedFiles.length || conversionState.status === 'processing'}>
             {conversionState.status === 'processing' ? 'Đang xử lý...' : 'Bắt đầu Chuyển đổi'}
           </button>
-
           <div className={`status-box status-${conversionState.status}`}>
             <div>{conversionState.message}</div>
             {conversionState.progress > 0 && conversionState.progress < 100 && (
@@ -132,52 +115,42 @@ function App() {
         </div>
       </aside>
 
-      {/* MAIN AREA = toolbar + sheet + piano + playbar + score panel */}
       <div className="main-area">
-
-        {/* Top toolbar: mode toggle */}
         {isReady && (
           <div className="top-toolbar">
             <ModeToggle />
           </div>
         )}
-
-        {/* Content row: sheet + score panel */}
         <div className="content-row">
           <div className="workspace-column">
             <main className="workspace">
               {isReady ? (
                 <div className="sheet-area">
-                  <SmartSheetViewer musicData={musicData} />
+                  <SmartSheetViewer musicData={musicData!} />
                 </div>
               ) : (
                 <div className="empty-state">
                   <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                    stroke="currentColor" strokeWidth="1">
                     <path d="M9 18V5l12-2v13"/>
                     <circle cx="6" cy="18" r="3"/>
                     <circle cx="18" cy="16" r="3"/>
                   </svg>
-                  <p>Không gian làm việc trống. Hãy tải lên một bản nhạc.</p>
+                  <p>Tải lên một bản nhạc để bắt đầu</p>
                 </div>
               )}
             </main>
-
             {isReady && (
               <div className="piano-area">
                 <PianoKeyboard />
               </div>
             )}
-
-            {isReady && <PlaybackBar />}
+            {/* PlaybackBar dùng bridgePlay để auto-start session */}
+            {isReady && <PlaybackBar onPlay={bridgePlay} />}
           </div>
-
-          {/* Score panel — chỉ hiện khi practice mode */}
           {isReady && practiceMode !== 'view' && <ScorePanel />}
         </div>
       </div>
-
-      {/* Result modal (global) */}
       <ResultModal />
     </div>
   );
