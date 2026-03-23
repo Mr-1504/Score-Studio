@@ -26,29 +26,9 @@ Nếu chưa có Node.js:
 1. Tải [`install-node.bat`](https://github.com/Mr-1504/Score-Studio/releases/download/untagged-e55e68601fb5f3835d1c/install-node.bat)
 2. Chuột phải → **Run as Administrator**
 
-### 2. Clone & cài dependencies
+### 2. Chạy ứng dụng
 
-```bash
-git clone https://github.com/Mr-1504/Score-Studio.git
-cd Score-Studio
-npm install
-```
-
-### 3. Cấu hình môi trường
-
-```bash
-cp .env.example .env
-```
-
-Mở `.env` và điền địa chỉ IP WSL (xem Phần II):
-
-```env
-VITE_CONVERT_API_URL=http://<IP_WSL>:2104/api/v1/musicxml/convert
-VITE_STATUS_API_URL=http://<IP_WSL>:2104/api/v1/musicxml/status
-VITE_DOWNLOAD_API_URL=http://<IP_WSL>:2104/api/v1/musicxml/download
-```
-
-### 4. Chạy ứng dụng
+Trên Windows, truy cập vào ổ `G\`, vào thư mục `doan/minh/Score-Studio` và chạy:
 
 ```bash
 npm run dev
@@ -67,16 +47,7 @@ Backend Spring Boot chạy trong WSL để tương thích với các engine xử
 wsl
 ```
 
-### 2. Lấy IP của WSL
-
-```bash
-hostname -I
-# Ví dụ kết quả: 172.25.10.5
-```
-
-Dùng IP này để điền vào file `.env` ở Phần I.
-
-### 3. Khởi chạy server
+### 2. Khởi chạy server
 
 ```bash
 cd /mnt/g/doan/minh/Muse-Parse
