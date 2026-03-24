@@ -74,17 +74,17 @@ ipcMain.handle("get-soundfont-note-list", () => AVAILABLE_NOTES);
 // ─── Existing handlers ────────────────────────────────────────────────────────
 
 const getApiUrls = () => ({
-  convert:  process.env.VITE_CONVERT_API_URL  || "http://localhost:8080/api/v1/musicxml/convert",
+  convert: process.env.VITE_CONVERT_API_URL || "http://localhost:8080/api/v1/musicxml/convert",
   download: process.env.VITE_DOWNLOAD_API_URL || "http://localhost:8080/api/v1/musicxml/download",
-  status:   process.env.VITE_STATUS_API_URL   || "http://localhost:8080/api/v1/musicxml/status",
+  status: process.env.VITE_STATUS_API_URL || "http://localhost:8080/api/v1/musicxml/status",
 });
 
 const JobStatus = {
-  PENDING:     "PENDING",
-  PROCESSING:  "PROCESSING",
+  PENDING: "PENDING",
+  PROCESSING: "PROCESSING",
   IN_PROGRESS: "IN_PROGRESS",
-  COMPLETED:   "COMPLETED",
-  FAILED:      "FAILED",
+  COMPLETED: "COMPLETED",
+  FAILED: "FAILED",
 } as const;
 
 type JobStatusType = typeof JobStatus[keyof typeof JobStatus];
@@ -164,28 +164,90 @@ ipcMain.handle("upload-and-convert", async (event, filePath: string, engine: str
         await new Promise((resolve) => setTimeout(resolve, pollInterval));
         attempts++;
 
+        let currentStatus = job.status;
+        let errorMessage = "Conversion failed";
+
         try {
           const statusResponse = await axios.get(`${apis.status}/${jobId}`, { timeout: 10000 });
           const updatedJob: ConversionJob = statusResponse.data;
 
-          if (updatedJob.status === JobStatus.COMPLETED) {
+          console.log(`Status check #${attempts}:`, updatedJob.status);
+
+          currentStatus = updatedJob.status;
+          errorMessage = updatedJob.errorMessage || errorMessage;
+
+          if (currentStatus === JobStatus.COMPLETED) {
             event.sender.send("conversion-progress", { jobId, status: "COMPLETED", progress: 100, message: "Hoàn thành!" });
             return updatedJob;
           }
-          if (updatedJob.status === JobStatus.FAILED) throw new Error(updatedJob.errorMessage || "Conversion failed");
+
           Object.assign(job, updatedJob);
         } catch (statusError: any) {
-          if (statusError.response?.status === 404) throw new Error("Job not found");
+          if (statusError.response?.status === 404) {
+            throw new Error("Job not found");
+          }
+        }
+        console.log(currentStatus === JobStatus.FAILED)
+        if (currentStatus === JobStatus.FAILED) {
+          event.sender.send("conversion-progress", {
+            jobId,
+            status: "FAILED",
+            progress: 100,
+            message: 'Có lỗi trong quá trình xử lý. Vui lòng thử lại với hình ảnh chất lượng tốt hơn (300 DPI).',
+          });
+          throw new Error(errorMessage);
         }
       }
       throw new Error("Timeout: Conversion took too long");
-    }
 
-    return job;
+      return job;
+    }
   } catch (error: any) {
-    console.error("Error uploading and converting:", error.message);
-    throw error;
+  console.error("Error uploading and converting:", error);
+
+  const code = error?.code;
+  const msg = error?.message || "";
+
+  if (
+    code === "ECONNREFUSED" || code === "ENOTFOUND" || code === "ECONNABORTED" ||
+    code === "ECONNRESET" || code === "EHOSTUNREACH" || code === "ENETUNREACH"
+  ) {
+    console.error("Connection error:", error);
+    event.sender.send("conversion-progress", {
+      status: "FAILED",
+      progress: 100,
+      message: "Không thể kết nối tới máy chủ. Vui lòng thử lại sau.",
+    });
+    return; 
+    // throw new Error("Connection failed"); 
   }
+
+  if (code === "ECONNABORTED" || msg.includes("timeout")) {
+    event.sender.send("conversion-progress", {
+      status: "FAILED",
+      progress: 100,
+      message: "Kết nối tới máy chủ quá lâu. Vui lòng thử lại.",
+    });
+    return;
+    // throw new Error("Connection timeout"); 
+  }
+
+  if (error.response) {
+    event.sender.send("conversion-progress", {
+      status: "FAILED",
+      progress: 100,
+      message: `Máy chủ lỗi (${error.response.status}). Vui lòng thử lại.`,
+    });
+    return;
+    // throw new Error(`Server error: ${error.response.status}`); // <--- THAY return; BẰNG throw
+  }
+
+  event.sender.send("conversion-progress", {
+    status: "FAILED",
+    progress: 100,
+    message: 'Lỗi khi chuyển đổi, vui lòng thay đổi hình ảnh chất lượng tốt hơn (300 DPI) và thử lại.',
+  });
+}
 });
 
 ipcMain.handle("download-musicxml", async (_event, jobId: string) => {

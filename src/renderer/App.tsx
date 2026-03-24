@@ -46,17 +46,17 @@ function App() {
   }, [activeSongId, addSession]);
 
   useEffect(() => {
-    const handleProgress = (data: any) => {
-      if (!data) return;
-      setConversionState(prev => ({
-        status:   'processing',
-        message:  data.message || 'Đang xử lý...',
-        progress: data.progress || prev.progress,
-      }));
-    };
-    window.electron?.ipcRenderer?.on?.('conversion-progress', handleProgress);
-    return () => window.electron?.ipcRenderer?.removeListener?.('conversion-progress', handleProgress);
-  }, []);
+  const handleProgress = (data: any) => {
+    if (!data) return;
+    setConversionState(prev => ({
+      status:   data.status === 'FAILED' ? 'error' : 'processing', 
+      message:  data.message || 'Đang xử lý...',
+      progress: data.progress || prev.progress,
+    }));
+  };
+  window.electron?.ipcRenderer?.on?.('conversion-progress', handleProgress);
+  return () => window.electron?.ipcRenderer?.removeListener?.('conversion-progress', handleProgress);
+}, []);
 
   const handleSelectFiles = async () => {
     try {

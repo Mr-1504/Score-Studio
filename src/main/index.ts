@@ -28,6 +28,7 @@ function createWindow() {
       devTools:         true,   // bật rõ ràng
     },
   });
+  mainWin.maximize();
 
   const win = mainWin;
 
