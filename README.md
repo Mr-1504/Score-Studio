@@ -38,7 +38,7 @@ npm run dev
 
 ## II. Cài đặt Backend (WSL)
 
-Backend Spring Boot chạy trong WSL để tương thích với các engine xử lý ảnh.
+Backend Flask API chạy trong WSL để tương thích với các engine xử lý ảnh.
 
 ### 1. Mở WSL
 
@@ -51,7 +51,8 @@ wsl
 
 ```bash
 cd /mnt/g/doan/minh/Muse-Parse
-./gradlew bootRun
+source venv/bin/activate
+python app.py
 ```
 
 Server sẽ lắng nghe ở cổng `2104`.
