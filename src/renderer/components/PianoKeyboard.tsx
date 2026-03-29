@@ -9,83 +9,92 @@ import {
 import './PianoKeyboard.css';
 
 const FIRST_MIDI = 36;
-const LAST_MIDI  = 96;
+const LAST_MIDI = 96;
 
 // Full 61-key mapping C2(36) → C7(96)
 // Dùng event.code — không bị ảnh hưởng input method tiếng Việt
 const CODE_MAP: Record<string, number> = {
   // ── C2 octave (36-47) — hàng số + backtick ──────────────────
   'Backquote': 36,  // C2
-  'F1':        37,  // C#2
-  'Digit1':    38,  // D2
-  'F2':        39,  // D#2
-  'Digit2':    40,  // E2
-  'Digit3':    41,  // F2
-  'F3':        42,  // F#2
-  'Digit4':    43,  // G2
-  'F4':        44,  // G#2
-  'Digit5':    45,  // A2
-  'F5':        46,  // A#2
-  'Digit6':    47,  // B2
+  'F1': 37,  // C#2
+  'Digit1': 38,  // D2
+  'F2': 39,  // D#2
+  'Digit2': 40,  // E2
+  'Digit3': 41,  // F2
+  'F3': 42,  // F#2
+  'Digit4': 43,  // G2
+  'F4': 44,  // G#2
+  'Digit5': 45,  // A2
+  'F5': 46,  // A#2
+  'Digit6': 47,  // B2
 
   // ── C3 octave (48-59) — hàng số 7-0 + F6-F10 + Backspace ───
-  'Digit7':      48,  // C3
-  'F6':          49,  // C#3
-  'Digit8':      50,  // D3
-  'F7':          51,  // D#3
-  'Digit9':      52,  // E3
-  'Digit0':      53,  // F3
-  'F8':          54,  // F#3
-  'Minus':       55,  // G3
-  'F9':          56,  // G#3
-  'Equal':       57,  // A3
-  'F10':         58,  // A#3
-  'Backspace':   59,  // B3
+  'Digit7': 48,  // C3
+  'F6': 49,  // C#3
+  'Digit8': 50,  // D3
+  'F7': 51,  // D#3
+  'Digit9': 52,  // E3
+  'Digit0': 53,  // F3
+  'F8': 54,  // F#3
+  'Minus': 55,  // G3
+  'F9': 56,  // G#3
+  'Equal': 57,  // A3
+  'F10': 58,  // A#3
+  'Backspace': 59,  // B3
 
   // ── C4 octave (60-71) — hàng Q-U + Tab F11 F12 BracketLeft/Right ──
-  'KeyQ':          60,  // C4
-  'Tab':           61,  // C#4
-  'KeyW':          62,  // D4
-  'F11':           63,  // D#4
-  'KeyE':          64,  // E4
-  'KeyR':          65,  // F4
-  'F12':           66,  // F#4
-  'KeyT':          67,  // G4
-  'BracketLeft':   68,  // G#4
-  'KeyY':          69,  // A4
-  'BracketRight':  70,  // A#4
-  'KeyU':          71,  // B4
+  'KeyQ': 60,  // C4
+  'Tab': 61,  // C#4
+  'KeyW': 62,  // D4
+  'F11': 63,  // D#4
+  'KeyE': 64,  // E4
+  'KeyR': 65,  // F4
+  'CapsLock': 66,  // F#4
+  'KeyT': 67,  // G4
+  'BracketLeft': 68,  // G#4
+  'KeyY': 69,  // A4
+  'BracketRight': 70,  // A#4
+  'KeyU': 71,  // B4
 
   // ── C5 octave (72-83) — hàng I-F + Backslash Delete Insert Home PgUp ──
-  'KeyI':        72,  // C5
-  'Backslash':   73,  // C#5
-  'KeyO':        74,  // D5
-  'Delete':      75,  // D#5
-  'KeyP':        76,  // E5
-  'KeyA':        77,  // F5
-  'Insert':      78,  // F#5
-  'KeyS':        79,  // G5
-  'Home':        80,  // G#5
-  'KeyD':        81,  // A5
-  'PageUp':      82,  // A#5
-  'KeyF':        83,  // B5
+  'KeyI': 72,  // C5
+  'Backslash': 73,  // C#5
+  'KeyO': 74,  // D5
+  'Delete': 75,  // D#5
+  'KeyP': 76,  // E5
+  'KeyA': 77,  // F5
+  'Insert': 78,  // F#5
+  'KeyS': 79,  // G5
+  'Home': 80,  // G#5
+  'KeyD': 81,  // A5
+  'PageUp': 82,  // A#5
+  'KeyF': 83,  // B5
 
   // ── C6 octave (84-95) — hàng G-' + End PgDn arrows ──────────
-  'KeyG':        84,  // C6
-  'End':         85,  // C#6
-  'KeyH':        86,  // D6
-  'PageDown':    87,  // D#6
-  'KeyJ':        88,  // E6
-  'KeyK':        89,  // F6
-  'ArrowUp':     90,  // F#6
-  'KeyL':        91,  // G6
-  'ArrowLeft':   92,  // G#6
-  'Semicolon':   93,  // A6
-  'ArrowRight':  94,  // A#6
-  'Quote':       95,  // B6
+  'KeyG': 84,  // C6
+  'End': 85,  // C#6
+  'KeyH': 86,  // D6
+  'PageDown': 87,  // D#6
+  'KeyJ': 88,  // E6
+  'KeyK': 89,  // F6
+  'ArrowUp': 90,  // F#6
+  'KeyL': 91,  // G6
+  'ArrowLeft': 92,  // G#6
+  'Semicolon': 93,  // A6
+  'ArrowRight': 94,  // A#6
+  'Quote': 95,  // B6
 
   // ── C7 (96) ──────────────────────────────────────────────────
-  'ArrowDown':   96,  // C7
+  'ArrowDown': 96,  // C7
+};
+
+const MIDI_TO_KEY_LABEL: Record<number, string> = {
+  36: '`', 37: 'F1', 38: '1', 39: 'F2', 40: '2', 41: '3', 42: 'F3', 43: '4', 44: 'F4', 45: '5', 46: 'F5', 47: '6',
+  48: '7', 49: 'F6', 50: '8', 51: 'F7', 52: '9', 53: '0', 54: 'F8', 55: '-', 56: 'F9', 57: '=', 58: 'F10', 59: 'BS',
+  60: 'Q', 61: 'Tab', 62: 'W', 63: 'F11', 64: 'E', 65: 'R', 66: 'Caps', 67: 'T', 68: '[', 69: 'Y', 70: ']', 71: 'U',
+  72: 'I', 73: '\\', 74: 'O', 75: 'Del', 76: 'P', 77: 'A', 78: 'Ins', 79: 'S', 80: 'Home', 81: 'D', 82: 'PgUp', 83: 'F',
+  84: 'G', 85: 'End', 86: 'H', 87: 'PgDn', 88: 'J', 89: 'K', 90: '↑', 91: 'L', 92: '←', 93: ';', 94: '→', 95: "'",
+  96: '↓'
 };
 
 function isBlack(midi: number): boolean {
@@ -93,7 +102,7 @@ function isBlack(midi: number): boolean {
 }
 
 function midiToNoteName(midi: number): string {
-  const names = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   return `${names[midi % 12]}${Math.floor(midi / 12) - 1}`;
 }
 
@@ -106,7 +115,7 @@ const ALL_KEYS = (() => {
 })();
 
 const WHITE_KEYS = ALL_KEYS.filter(k => !k.black);
-const WHITE_X    = new Map<number, number>();
+const WHITE_X = new Map<number, number>();
 WHITE_KEYS.forEach((k, i) => WHITE_X.set(k.midi, i * 36));
 
 function blackKeyX(midi: number): number {
@@ -129,8 +138,8 @@ function getKeyClass(
   if (isPractice) {
     const v = flash.get(midi);
     if (v === 'correct') return `${base} pk-correct`;
-    if (v === 'wrong')   return `${base} pk-wrong`;
-    if (v === 'late')    return `${base} pk-late`;
+    if (v === 'wrong') return `${base} pk-wrong`;
+    if (v === 'late') return `${base} pk-late`;
   }
 
   // Phím đang giữ (keyboard hoặc chuột)
@@ -150,17 +159,17 @@ interface PianoKeyboardProps {
 }
 
 export default function PianoKeyboard({ onKeyPress }: PianoKeyboardProps) {
-  const activeNotes    = usePlaybackStore(s => s.activeNotes);
-  const mode           = usePracticeMode();
-  const expectedMidi   = useExpectedMidi();
-  const verdictFlash   = useVerdictFlash();
+  const activeNotes = usePlaybackStore(s => s.activeNotes);
+  const mode = usePracticeMode();
+  const expectedMidi = useExpectedMidi();
+  const verdictFlash = useVerdictFlash();
   const onUserKeyPress = useOnUserKeyPress();
 
   // Local pressed state — visual feedback ngay lập tức, không phụ thuộc session
   const [pressedKeys, setPressedKeys] = useState<Set<number>>(new Set());
 
-  const isPractice  = mode !== 'view';
-  const activeSet   = new Set<number>(activeNotes as number[]);
+  const isPractice = mode !== 'view';
+  const activeSet = new Set<number>(activeNotes as number[]);
   const expectedSet = new Set<number>(expectedMidi);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -214,6 +223,7 @@ export default function PianoKeyboard({ onKeyPress }: PianoKeyboardProps) {
         className="piano-keyboard"
         style={{ width: totalWidth, position: 'relative', height: 140 }}
       >
+        {/* ── WHITE KEYS ── */}
         {WHITE_KEYS.map(k => (
           <div
             key={k.midi}
@@ -231,12 +241,17 @@ export default function PianoKeyboard({ onKeyPress }: PianoKeyboardProps) {
             onMouseUp={() => setPressedKeys(prev => { const n = new Set(prev); n.delete(k.midi); return n; })}
             onMouseLeave={() => setPressedKeys(prev => { const n = new Set(prev); n.delete(k.midi); return n; })}
           >
-            {k.name.startsWith('C') && !k.name.includes('#') && (
-              <span className="pk-label">{k.name}</span>
-            )}
+            {/* BỌC LABEL VÀO DIV */}
+            <div className="pk-labels">
+              <span className="pk-label-pc">{MIDI_TO_KEY_LABEL[k.midi]}</span>
+              {k.name.startsWith('C') && !k.name.includes('#') && (
+                <span className="pk-label-note">{k.name}</span>
+              )}
+            </div>
           </div>
         ))}
 
+        {/* ── BLACK KEYS ── */}
         {ALL_KEYS.filter(k => k.black).map(k => (
           <div
             key={k.midi}
@@ -253,7 +268,9 @@ export default function PianoKeyboard({ onKeyPress }: PianoKeyboardProps) {
             }}
             onMouseUp={() => setPressedKeys(prev => { const n = new Set(prev); n.delete(k.midi); return n; })}
             onMouseLeave={() => setPressedKeys(prev => { const n = new Set(prev); n.delete(k.midi); return n; })}
-          />
+          >
+            <span className="pk-label-pc-black">{MIDI_TO_KEY_LABEL[k.midi]}</span>
+          </div>
         ))}
       </div>
 

@@ -3,6 +3,7 @@ import './App.css';
 import SmartSheetViewer from './components/SmartSheetViewer';
 import PlaybackBar from './components/PlaybackBar';
 import PianoKeyboard from './components/PianoKeyboard';
+import FallingNotes from './components/FallingNotes';
 import ModeToggle from './components/ModeToggle';
 import ScorePanel from './components/ScorePanel';
 import ResultModal from './components/ResultModal';
@@ -23,9 +24,9 @@ function App() {
   const [musicData, setMusicData] = useState<MusicData | null>(null);
   const [activeSongId, setActiveSongId] = useState<string | null>(null);
 
-  const loadXML      = useLoadXML();
+  const loadXML = useLoadXML();
   const practiceMode = usePracticeMode();
-  const isReady      = !!musicData && conversionState.status === 'ready';
+  const isReady = !!musicData && conversionState.status === 'ready';
 
   const { addSong, addSession } = useLibraryStore.getState();
 
@@ -46,17 +47,17 @@ function App() {
   }, [activeSongId, addSession]);
 
   useEffect(() => {
-  const handleProgress = (data: any) => {
-    if (!data) return;
-    setConversionState(prev => ({
-      status:   data.status === 'FAILED' ? 'error' : 'processing', 
-      message:  data.message || 'Đang xử lý...',
-      progress: data.progress || prev.progress,
-    }));
-  };
-  window.electron?.ipcRenderer?.on?.('conversion-progress', handleProgress);
-  return () => window.electron?.ipcRenderer?.removeListener?.('conversion-progress', handleProgress);
-}, []);
+    const handleProgress = (data: any) => {
+      if (!data) return;
+      setConversionState(prev => ({
+        status: data.status === 'FAILED' ? 'error' : 'processing',
+        message: data.message || 'Đang xử lý...',
+        progress: data.progress || prev.progress,
+      }));
+    };
+    window.electron?.ipcRenderer?.on?.('conversion-progress', handleProgress);
+    return () => window.electron?.ipcRenderer?.removeListener?.('conversion-progress', handleProgress);
+  }, []);
 
   const handleSelectFiles = async () => {
     try {
@@ -86,9 +87,9 @@ function App() {
           setConversionState({ status: 'ready', message: 'Sẵn sàng!', progress: 100 });
 
           // Lưu vào library — parse title từ XML
-          const parser   = new DOMParser();
-          const doc      = parser.parseFromString(dl.xmlContent, 'application/xml');
-          const title    = doc.querySelector('work-title, movement-title')?.textContent?.trim() ?? 'Untitled';
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(dl.xmlContent, 'application/xml');
+          const title = doc.querySelector('work-title, movement-title')?.textContent?.trim() ?? 'Untitled';
           const composer = doc.querySelector('creator[type="composer"]')?.textContent?.trim() ?? '';
           const noteCount = doc.querySelectorAll('note:not([grace])').length;
 
@@ -191,9 +192,9 @@ function App() {
                 <div className="empty-state">
                   <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" strokeWidth="1">
-                    <path d="M9 18V5l12-2v13"/>
-                    <circle cx="6" cy="18" r="3"/>
-                    <circle cx="18" cy="16" r="3"/>
+                    <path d="M9 18V5l12-2v13" />
+                    <circle cx="6" cy="18" r="3" />
+                    <circle cx="18" cy="16" r="3" />
                   </svg>
                   <p>Chọn bài từ thư viện hoặc convert ảnh mới</p>
                 </div>
@@ -201,7 +202,10 @@ function App() {
             </main>
             {isReady && (
               <div className="piano-area">
-                <PianoKeyboard />
+                <div style={{ width: 'max-content', margin: '0 auto' }}>
+                  <FallingNotes />
+                  <PianoKeyboard />
+                </div>
               </div>
             )}
             {isReady && <PlaybackBar onPlay={bridgePlay} />}

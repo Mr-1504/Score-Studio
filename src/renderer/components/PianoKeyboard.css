@@ -40,6 +40,11 @@
   cursor: pointer; z-index: 2;
   transition: background 0.05s;
   box-shadow: 0 3px 6px rgba(0,0,0,0.3), inset 0 -1px 0 rgba(255,255,255,0.05);
+
+  display: flex; 
+  align-items: flex-end; 
+  justify-content: center;
+  padding-bottom: 4px;
 }
 .pk-key.pk-black:hover { background: #3a342e; }
 
@@ -64,9 +69,46 @@
 .pk-key.pk-black.pk-late { background: #4a2c08; border-color: #a06018; }
 
 /* Labels */
-.pk-label { font-size: 9px; color: #a8a39d; pointer-events: none; font-family: 'DM Mono', monospace; }
-.pk-key.pk-active .pk-label  { color: #1a4878; }
-.pk-key.pk-correct .pk-label { color: #1a4a30; }
+.pk-labels { 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  gap: 2px; 
+  pointer-events: none; 
+}
+
+/* Chữ hiển thị phím laptop trên phím trắng */
+.pk-label-pc { 
+  font-size: 11px; 
+  font-weight: 600; 
+  color: #a8a39d; 
+  pointer-events: none; 
+}
+
+/* Chữ hiển thị tên nốt (C2, C3...) */
+.pk-label-note { 
+  font-size: 9px; 
+  color: #c0bbb4; 
+  font-family: 'DM Mono', monospace; 
+  pointer-events: none; 
+}
+
+/* Chữ hiển thị phím laptop trên phím đen */
+.pk-label-pc-black { 
+  font-size: 9px; 
+  font-weight: 500; 
+  color: #6a645e; 
+  pointer-events: none; 
+}
+
+/* Màu chữ khi phím được Active/Correct */
+.pk-key.pk-active .pk-label-pc,
+.pk-key.pk-active .pk-label-note { color: #1a4878; }
+.pk-key.pk-correct .pk-label-pc,
+.pk-key.pk-correct .pk-label-note { color: #1a4a30; }
+
+.pk-key.pk-black.pk-active .pk-label-pc-black { color: #c8e0f4; }
+.pk-key.pk-black.pk-correct .pk-label-pc-black { color: #c8ecd8; }
 
 /* Bottom row */
 .pk-bottom-row {

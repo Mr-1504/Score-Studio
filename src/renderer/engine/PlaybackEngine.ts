@@ -139,7 +139,7 @@ export class PlaybackEngine {
       return;
     }
 
-    // Follow mode: schedule tất cả notes như cũ
+    // Follow mode: schedule tất cả notes
     const music = this.music;
     const speed = this._speed;
     const startOffset = this.pausedAtSec;
@@ -161,23 +161,27 @@ export class PlaybackEngine {
     Tone.getTransport().cancel();
 
     const offsetScaled = startOffset / speed;
-    const events: { time: number; notes: NoteEvent[] }[] = [];
+    
+    // SỬA LỖI 1: Chuyển đổi format events sang cấu trúc [time, value] để tương thích 100% với Tone.Part
+    const events: Array<[number, { notes: NoteEvent[] }]> = [];
     [...grouped.keys()].sort((a, b) => a - b).forEach(msKey => {
       const sec = msKey / 1000;
       if (sec >= offsetScaled) {
-        events.push({ time: sec - offsetScaled, notes: grouped.get(msKey)! });
+        events.push([sec - offsetScaled, { notes: grouped.get(msKey)! }]);
       }
     });
 
     const instrument = this.instrument;
     const callbacks  = this.callbacks;
 
-    const part = new Tone.Part<{ time: number; notes: NoteEvent[] }>(
-      (time, { notes }) => {
+    const part = new Tone.Part(
+      (time, value: { notes: NoteEvent[] }) => {
+        const notes = value.notes;
         const midiNotes = notes.map(n => n.midiNote);
         const noteIdx   = notes[0]?.noteIndex ?? 0;
 
-        Tone.getDraw().schedule(() => {
+        // SỬA LỖI 2: Thay Tone.getDraw() bằng Tone.Draw 
+        Tone.Draw.schedule(() => {
           callbacks.onNoteOn(notes, notes[0].startBeat, noteIdx);
         }, time);
 
@@ -192,7 +196,9 @@ export class PlaybackEngine {
         });
 
         const maxDur  = Math.max(...notes.map(n => n.durationSec));
-        const nowAudio = Tone.getContext().currentTime;
+        
+        // SỬA LỖI 3: Dùng Tone.now() chuẩn hơn thay vì chọc sâu vào rawContext
+        const nowAudio = Tone.now(); 
         const delayMs  = Math.max(0, (time - nowAudio + maxDur) * 1000) + 80;
 
         const timer = setTimeout(() => {
@@ -220,7 +226,8 @@ export class PlaybackEngine {
     }, '32n');
     this.positionLoop.start(0);
 
-    Tone.getTransport().start();
+    // Bắt đầu timeline với độ trễ 50ms để AudioContext kịp thời sắp xếp track
+    Tone.getTransport().start("+0.05"); 
     this._setStatus('playing');
   }
 
