@@ -1,8 +1,3 @@
-// src/renderer/components/MusicXMLParser.ts
-// FIX: measureIndex giờ đọc từ attribute `number` của thẻ <measure> trong XML
-//      thay vì dùng counter local reset theo từng part.
-//      OSMD cũng dùng attribute `number` → 2 bên đồng bộ 100%.
-
 import type { NoteEvent, ParsedMusic, TempoChange, TimeSignature } from '../types/music';
 
 const NOTE_SEMITONES: Record<string, number> = {
@@ -145,19 +140,11 @@ export class MusicXMLParser {
     let maxTotalBeats = 0;
     const beatToSec = (beat: number) => (beat / baseBPM) * 60;
 
-    // ── FIX CHÍNH: Đọc measureIndex từ attribute `number` của thẻ <measure> ──
-    // OSMD cũng index theo attribute này (1-based), ta trừ 1 để về 0-based.
-    // Với cả hai part (tay trái/phải), cùng ô nhịp sẽ có cùng measureIndex.
-
     doc.querySelectorAll('part').forEach(part => {
       let currentBeat = 0;
+      let measureIdx = 0;
 
       part.querySelectorAll('measure').forEach(measure => {
-        // Đọc attribute number (1-based trong MusicXML spec)
-        const measureNumber = parseInt(measure.getAttribute('number') ?? '1');
-        // Chuyển về 0-based để khớp với gs.MeasureList index của OSMD
-        const measureIdx = measureNumber - 1;
-
         let chordBeat = currentBeat;
 
         Array.from(measure.children).forEach(child => {
@@ -200,8 +187,8 @@ export class MusicXMLParser {
               durationBeats,
               startSec:     beatToSec(chordBeat),
               durationSec:  beatToSec(durationBeats),
-              measureIndex: measureIdx,              // ← Dùng attribute number (0-based)
-              noteIndex:    0,                       // Sẽ đánh lại sau sort
+              measureIndex: measureIdx,        
+              noteIndex:    0,
               isChord,
               chordGroupId: `${measureIdx}-beat-${chordBeat.toFixed(4)}`,
               voice,
@@ -212,10 +199,10 @@ export class MusicXMLParser {
         });
 
         maxTotalBeats = Math.max(maxTotalBeats, currentBeat);
+        measureIdx++; 
       });
     });
 
-    // Sắp xếp theo thời gian, sau đó đánh lại noteIndex
     notes.sort((a, b) => a.startBeat - b.startBeat || a.measureIndex - b.measureIndex);
     notes.forEach((n, i) => (n.noteIndex = i));
 
