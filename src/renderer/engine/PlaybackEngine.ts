@@ -347,8 +347,7 @@ export class PlaybackEngine {
       const group = [base];
       let j = i + 1;
       while (j < notes.length &&
-             notes[j].chordGroupId === base.chordGroupId &&
-             notes[j].isChord) {
+             notes[j].chordGroupId === base.chordGroupId) {
         group.push(notes[j]);
         j++;
       }

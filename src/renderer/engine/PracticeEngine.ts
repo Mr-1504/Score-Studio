@@ -175,8 +175,7 @@ export class PracticeEngine {
       const g    = [base];
       let j = i + 1;
       while (j < notes.length &&
-             notes[j].chordGroupId === base.chordGroupId &&
-             notes[j].isChord) {
+             notes[j].chordGroupId === base.chordGroupId) {
         g.push(notes[j]); j++;
       }
       result.push(g);
