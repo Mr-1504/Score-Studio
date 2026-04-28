@@ -183,6 +183,8 @@ const SheetMusicViewer = forwardRef(({ musicXML }: SheetMusicViewerProps, ref) =
       return results;
     };
 
+    const processedNodes = new Set<Element>();
+
     currentNoteEvents.forEach(n => {
       const sameNotesInMeasure = music.notes.filter(
         mn => mn.measureIndex === n.measureIndex && mn.midiNote === n.midiNote
@@ -215,6 +217,9 @@ const SheetMusicViewer = forwardRef(({ musicXML }: SheetMusicViewerProps, ref) =
       const allNodes = [targetSvg, ...Array.from(targetSvg.querySelectorAll('path, ellipse, circle, rect, use'))];
       
       allNodes.forEach(node => {
+        if (processedNodes.has(node)) return;
+        processedNodes.add(node);
+
         const tagName = node.tagName.toLowerCase();
         if (['path', 'ellipse', 'circle', 'rect', 'use'].includes(tagName)) {
           const svg = node as SVGElement;
