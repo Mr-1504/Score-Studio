@@ -6,7 +6,7 @@ import {
   usePauseAction, useStopAction, useSeekAction,
   useSetSpeedAction, useInitInstrument,
 } from '../store/usePlaybackStore';
-import { useLoopStore, useLoopEnabled, useLoopStartSec, useLoopEndSec, loopEngine } from '../store/useLoopStore';
+import { useLoopStore, useLoopEnabled, useLoopStartSec, loopEngine } from '../store/useLoopStore';
 import LoopSelector from './LoopSelector';
 import './PlaybackBar.css';
 

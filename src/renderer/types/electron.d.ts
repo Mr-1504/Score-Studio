@@ -4,7 +4,7 @@
 export interface ElectronAPI {
     selectImageFiles: () => Promise<string[] | null>;
     uploadAndConvert: (filePath: string, engine: string) => Promise<any>;
-    downloadMusicXML: (jobId: string) => Promise<{
+    downloadMusicXML: (jobId: string, isZip: boolean) => Promise<{
         success: boolean;
         xmlContent: string;
         xmlPath: string;

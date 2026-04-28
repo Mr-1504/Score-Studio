@@ -10,7 +10,8 @@
     "dev": "npm-run-all --parallel dev:vite dev:electron",
     "dev:vite": "vite",
     "dev:electron": "wait-on http://localhost:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .",
-    "build": "tsc -b && vite build",
+    "build:electron": "electron-vite build",
+    "build": "electron-vite build && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "electron:build": "electron-builder"

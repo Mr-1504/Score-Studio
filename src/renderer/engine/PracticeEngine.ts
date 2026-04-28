@@ -25,7 +25,7 @@ export interface PracticeCallbacks {
 }
 
 export class PracticeEngine {
-private music:      ParsedMusic | null = null;
+
   private mode:       PracticeMode = 'view';
   private cb:         PracticeCallbacks;
   private groups:     NoteEvent[][] = [];  // chord groups
@@ -42,7 +42,7 @@ private music:      ParsedMusic | null = null;
   // ── Setup ─────────────────────────────────────────────────────────────────
 
   loadMusic(music: ParsedMusic): void {
-    this.music  = music;
+
     this.groups = this._buildGroups(music);
     this._reset();
   }

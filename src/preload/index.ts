@@ -4,8 +4,8 @@ const electronAPI = {
     selectImageFiles: () => ipcRenderer.invoke('select-image-files'),
     uploadAndConvert: (filePath: string, engine: string) =>
         ipcRenderer.invoke('upload-and-convert', filePath, engine),
-    downloadMusicXML: (jobId: string) =>
-        ipcRenderer.invoke('download-musicxml', jobId),
+    downloadMusicXML: (jobId: string, isZip: boolean) =>
+        ipcRenderer.invoke('download-musicxml', jobId, isZip),
 
     // Fetch 1 nốt soundfont mp3 qua main process (bypass CSP)
     // Trả về number[] (bytes của mp3), renderer tự decode thành AudioBuffer

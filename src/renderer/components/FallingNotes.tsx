@@ -110,8 +110,8 @@ export default function FallingNotes() {
             ctx.font = 'bold 11px "DM Sans", sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'bottom';
-            // Cắt lấy chữ cái đầu tiên (vd: C#4 -> C)
-            const noteLetter = note.pitch.charAt(0);
+            // Cắt bỏ số quãng tám để giữ lại tên nốt và dấu hóa (vd: C#4 -> C#, Bb4 -> Bb)
+            const noteLetter = note.pitch.replace(/\d+$/, '');
             ctx.fillText(noteLetter, x + w / 2, bottomY - 4);
           }
         });

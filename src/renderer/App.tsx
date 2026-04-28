@@ -77,9 +77,8 @@ function App() {
       setConversionState({ status: 'processing', message: 'Đang gửi dữ liệu...', progress: 10 });
       const result = await window.electron.uploadAndConvert(selectedFiles[0], engine);
 
-      if (engine === 'AUDIVERIS_XML') {
         setConversionState({ status: 'processing', message: 'Đang tải MusicXML...', progress: 90 });
-        const dl = await window.electron.downloadMusicXML(result.jobId);
+        const dl = await window.electron.downloadMusicXML(result.jobId, engine === 'AUDIVERIS_XML');
         if (dl.success) {
           const data: MusicData = { rawContent: dl.xmlContent, format: 'xml' };
           setMusicData(data);
@@ -101,11 +100,6 @@ function App() {
           setActiveSongId(song.id);
           useLibraryStore.getState().setActiveSong(song.id);
         }
-      } else {
-        const mockKern = `**kern\n*clefG2\n*k[f#]\n*M4/4\n=1\n4c\n4d\n4e\n4f\n==\n*-`;
-        setMusicData({ rawContent: mockKern, format: 'kern' });
-        setConversionState({ status: 'ready', message: 'Sẵn sàng!', progress: 100 });
-      }
     } catch (e: any) {
       setConversionState({ status: 'error', message: `Lỗi: ${e.message}`, progress: 0 });
     }

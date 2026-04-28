@@ -8,11 +8,6 @@ function stepAlterOctaveToMidi(step: string, alter: number, octave: number): num
   return (octave + 1) * 12 + (NOTE_SEMITONES[step] ?? 0) + Math.round(alter);
 }
 
-function midiToPitchName(midi: number): string {
-  const names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-  const octave = Math.floor(midi / 12) - 1;
-  return `${names[midi % 12]}${octave}`;
-}
 
 export class MusicXMLParser {
   parse(xmlString: string): ParsedMusic {
@@ -179,10 +174,13 @@ export class MusicXMLParser {
             const midiNote = stepAlterOctaveToMidi(step, alter, octave);
             const voice    = parseInt(child.querySelector('voice')?.textContent ?? '1');
 
+            const alterStr = alter === 1 ? '#' : alter === -1 ? 'b' : alter === 2 ? 'x' : alter === -2 ? 'bb' : '';
+            const pitchStr = `${step}${alterStr}${octave}`;
+
             notes.push({
               id:           `${measureIdx}-${notes.length}`,
               midiNote,
-              pitch:        midiToPitchName(midiNote),
+              pitch:        pitchStr,
               startBeat:    chordBeat,
               durationBeats,
               startSec:     beatToSec(chordBeat),

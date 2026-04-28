@@ -100,10 +100,22 @@ export function extractParsedMusicFromOSMD(osmd: any): ParsedMusic {
 
             const durationBeats = getDurationBeats(sn);
 
+            let pitchStr = '';
+            try {
+              const p = sn?.pitch ?? sn?.Pitch;
+              if (p && typeof p.ToString === 'function') {
+                const pStr = p.ToString();
+                if (typeof pStr === 'string' && /^[A-G]/.test(pStr)) {
+                  pitchStr = pStr.replace('-', '');
+                }
+              }
+            } catch(e) {}
+            if (!pitchStr) pitchStr = midiToPitchName(midi);
+
             notes.push({
               id: `${mIdx}-${notes.length}`,
               midiNote: midi,
-              pitch: midiToPitchName(midi),
+              pitch: pitchStr,
               startBeat,
               durationBeats,
               // startSec/durationSec sẽ tính sau khi có tempo
